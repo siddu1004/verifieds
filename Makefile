@@ -11,6 +11,7 @@ verify-py:
 	python -m ruff format --check .
 	python -m mypy --strict verifieds
 	python -m vulture verifieds --min-confidence 80
+	python -m verifieds.schemas.export --check
 	python -m pytest --cov=verifieds --cov-branch --cov-fail-under=90
 
 tools-check:

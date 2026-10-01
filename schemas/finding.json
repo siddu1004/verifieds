@@ -1,0 +1,63 @@
+{
+  "additionalProperties": false,
+  "description": "Suboptimal data structure or algorithm finding in analysed C++ code.",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "rule_id": {
+      "title": "Rule Id",
+      "type": "string"
+    },
+    "file": {
+      "title": "File",
+      "type": "string"
+    },
+    "start_line": {
+      "title": "Start Line",
+      "type": "integer"
+    },
+    "end_line": {
+      "title": "End Line",
+      "type": "integer"
+    },
+    "adt": {
+      "enum": [
+        "queue",
+        "stack",
+        "priority_queue",
+        "list",
+        "sort",
+        "search"
+      ],
+      "title": "Adt",
+      "type": "string"
+    },
+    "impl": {
+      "title": "Impl",
+      "type": "string"
+    },
+    "complexity_before": {
+      "title": "Complexity Before",
+      "type": "string"
+    },
+    "evidence": {
+      "title": "Evidence",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "rule_id",
+    "file",
+    "start_line",
+    "end_line",
+    "adt",
+    "impl",
+    "complexity_before",
+    "evidence"
+  ],
+  "title": "Finding",
+  "type": "object"
+}

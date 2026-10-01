@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "WorkloadResult": {
+      "additionalProperties": false,
+      "description": "Performance measurement result for a single workload size n.",
+      "properties": {
+        "n": {
+          "title": "N",
+          "type": "integer"
+        },
+        "original_ms_median": {
+          "title": "Original Ms Median",
+          "type": "number"
+        },
+        "candidate_ms_median": {
+          "title": "Candidate Ms Median",
+          "type": "number"
+        },
+        "runs": {
+          "title": "Runs",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "n",
+        "original_ms_median",
+        "candidate_ms_median",
+        "runs"
+      ],
+      "title": "WorkloadResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Verification and benchmarking report for a proposed candidate.",
+  "properties": {
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "equivalent": {
+      "title": "Equivalent",
+      "type": "boolean"
+    },
+    "rejected_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rejected Reason"
+    },
+    "workloads": {
+      "items": {
+        "$ref": "#/$defs/WorkloadResult"
+      },
+      "title": "Workloads",
+      "type": "array"
+    },
+    "speedup_at_max_n": {
+      "title": "Speedup At Max N",
+      "type": "number"
+    },
+    "crossover_n": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Crossover N"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "equivalent",
+    "workloads",
+    "speedup_at_max_n"
+  ],
+  "title": "VerifyReport",
+  "type": "object"
+}

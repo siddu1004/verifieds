@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "description": "Proposed data structure or algorithm modification candidate.",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "finding_id": {
+      "title": "Finding Id",
+      "type": "string"
+    },
+    "strategy": {
+      "title": "Strategy",
+      "type": "string"
+    },
+    "diff": {
+      "title": "Diff",
+      "type": "string"
+    },
+    "expected_complexity_after": {
+      "title": "Expected Complexity After",
+      "type": "string"
+    },
+    "risks": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Risks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "finding_id",
+    "strategy",
+    "diff",
+    "expected_complexity_after",
+    "risks"
+  ],
+  "title": "Candidate",
+  "type": "object"
+}
