@@ -3,8 +3,8 @@
 | Task | Deps | Owner | Status | Branch | Last verify |
 |---|---|---|---|---|---|
 | S-00 | none | builder-sim | accepted | integration | verify-py ✅ R-00 hygiene passed |
-| S-01 | S-00 | builder-sim | ready | task/S-01 | |
-| S-02 | S-01 | builder-sim | todo | task/S-02 | |
+| S-01 | S-00 | builder-sim | accepted | integration | verify-py ✅ C++ structures + heap_sort benchmarked |
+| S-02 | S-01 | builder-sim | ready | task/S-02 | |
 | S-03 | S-02 | builder-sim | todo | task/S-03 | |
 | S-04 | S-00 | builder-contracts | accepted | integration | verify-py ✅ R-01 schema tightened (97.7% cov) |
 | S-07 | S-04 | builder-contracts | accepted | integration | verify-py ✅ R-02 proposer fixed (95.1% cov) |
