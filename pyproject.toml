@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=72"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "verifieds"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.7"]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "vulture>=2.11",
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["F", "E", "B", "ARG", "UP", "SIM"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+
+[tool.vulture]
+min_confidence = 80
+# MCP SDK registers tool-handler functions via decorator introspection;
+# vulture cannot see those call sites, so we suppress them here globally.
+ignore_decorators = ["@mcp.tool", "@server.tool"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=verifieds --cov-branch --cov-fail-under=90"
+
+[tool.coverage.run]
+branch = true
+source = ["verifieds"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["verifieds*"]
