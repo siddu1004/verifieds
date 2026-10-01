@@ -22,7 +22,7 @@
 | **S-04** | Pydantic schemas | 🔍 review |
 | S-05 | Detector (tree-sitter) | ⬜ todo |
 | S-06 | Harness (timing + equivalence) | ⬜ todo |
-| **S-07** | Proposer (Ollama client) | 🟡 ready |
+| **S-07** | Proposer (Ollama client) | 🔍 review |
 | S-08 | Pipeline (end-to-end) | ⬜ todo |
 | S-09 | MCP server | ⬜ todo |
 | S-10 | Safety tests | ⬜ todo |

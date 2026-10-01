@@ -1,0 +1,1 @@
+Using only the measured results provided, explain why this structure was chosen, its complexity, the crossover size and the trade-offs. Do not add numbers that are not in the results.

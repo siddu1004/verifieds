@@ -7,7 +7,7 @@
 | S-02 | S-01 | builder-sim | todo | task/S-02 | |
 | S-03 | S-02 | builder-sim | todo | task/S-03 | |
 | S-04 | S-00 | builder-contracts | review | task/S-04 | verify-py ✅ (97.7% cov) |
-| S-07 | S-04 | builder-contracts | ready | task/S-07 | |
+| S-07 | S-04 | builder-contracts | review | task/S-07 | verify-py ✅ (97.5% cov) |
 | S-05 | S-02, S-04 | builder-analysis | todo | task/S-05 | |
 | S-06 | S-02, S-04 | builder-analysis | todo | task/S-06 | |
 | S-08 | S-05, S-06, S-07 | builder-analysis | todo | task/S-08 | |

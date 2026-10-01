@@ -1,0 +1,1 @@
+Try to break this candidate. List inputs where its output differs from the original (empty, duplicates, ties, huge, mutation of arguments). Return failing inputs as JSON.
