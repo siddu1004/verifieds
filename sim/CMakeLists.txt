@@ -27,5 +27,8 @@ enable_testing()
 
 add_executable(test_smoke tests/test_smoke.cpp)
 target_link_libraries(test_smoke PRIVATE sim_lib)
-
 add_test(NAME smoke COMMAND test_smoke)
+
+add_executable(test_structures tests/test_structures.cpp)
+target_link_libraries(test_structures PRIVATE sim_lib)
+add_test(NAME structures COMMAND test_structures)
