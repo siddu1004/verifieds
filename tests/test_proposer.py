@@ -1,4 +1,4 @@
-"""Unit tests for Ollama proposer client (S-07 / R-02)."""
+"""Unit tests for Ollama proposer client (S-07 / R-02 / R-03)."""
 
 from collections.abc import Generator
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -79,6 +79,19 @@ def sample_finding() -> Finding:
     )
 
 
+def test_proposer_prompt_template_contents() -> None:
+    """Assert proposer.txt names CandidateDraft fields and avoids obsolete tags."""
+    proposer = OllamaProposer()
+    prompt = proposer.system_prompt
+    assert "strategy" in prompt
+    assert "diff" in prompt
+    assert "expected_complexity_after" in prompt
+    assert "risks" in prompt
+    assert "CandidateDraft" in prompt
+    assert "<code>" not in prompt
+    assert "Candidate schema" not in prompt
+
+
 def test_proposer_valid_response(
     fake_ollama_server: str, sample_finding: Finding
 ) -> None:
@@ -130,28 +143,64 @@ def test_proposer_delimiter_wraps_code_with_closing_tags_and_instructions(
     assert len(FakeOllamaHandler.received_prompts) == 1
     sent_prompt = FakeOllamaHandler.received_prompts[0]
 
-    # Must contain random DATA_BLOCK_ delimiter line
     assert "DATA_BLOCK_" in sent_prompt
     assert malicious_code in sent_prompt
 
 
-def test_proposer_empty_response_body_raises_parse_error(
+def test_proposer_empty_body_and_missing_key_follow_retry_policy(
     fake_ollama_server: str, sample_finding: Finding
 ) -> None:
-    """Empty HTTP response body raises OllamaParseError."""
-    FakeOllamaHandler.responses = [b""]
+    """Empty body or missing response key retries once and succeeds on retry."""
+    valid_draft_json = json.dumps(
+        [
+            {
+                "strategy": "retry strategy",
+                "diff": "diff",
+                "expected_complexity_after": "O(1)",
+                "risks": [],
+            }
+        ]
+    )
+
+    # Case 1: Empty body on attempt 1, valid response on attempt 2
+    FakeOllamaHandler.responses = [b"", {"response": valid_draft_json}]
     proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
-    with pytest.raises(OllamaParseError, match="empty response body"):
-        proposer.propose(sample_finding, "code")
+    drafts = proposer.propose(sample_finding, "code")
+    assert len(drafts) == 1
+    assert drafts[0].strategy == "retry strategy"
+
+    # Case 2: Missing 'response' key on attempt 1, valid response on attempt 2
+    FakeOllamaHandler.responses = [
+        {"missing_key": True},
+        {"response": valid_draft_json},
+    ]
+    drafts2 = proposer.propose(sample_finding, "code")
+    assert len(drafts2) == 1
+    assert drafts2[0].strategy == "retry strategy"
 
 
-def test_proposer_missing_response_key_raises_parse_error(
+def test_proposer_draft_with_forbidden_id_field_rejected(
     fake_ollama_server: str, sample_finding: Finding
 ) -> None:
-    """JSON response missing 'response' key raises OllamaParseError."""
-    FakeOllamaHandler.responses = [{"other_key": "val"}]
+    """Draft containing forbidden 'id' or 'finding_id' fields raises parse error."""
+    forbidden_json = json.dumps(
+        [
+            {
+                "id": "cand_forbidden",
+                "finding_id": "find_01",
+                "strategy": "s",
+                "diff": "d",
+                "expected_complexity_after": "O(1)",
+                "risks": [],
+            }
+        ]
+    )
+    FakeOllamaHandler.responses = [
+        {"response": forbidden_json},
+        {"response": forbidden_json},
+    ]
     proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
-    with pytest.raises(OllamaParseError, match="missing 'response' key"):
+    with pytest.raises(OllamaParseError):
         proposer.propose(sample_finding, "code")
 
 

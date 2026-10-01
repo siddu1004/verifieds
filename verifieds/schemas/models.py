@@ -73,16 +73,24 @@ class VerifyReport(BaseModel):
     equivalent: bool
     rejected_reason: str | None = None
     workloads: list[WorkloadResult]
-    speedup_at_max_n: float = Field(gt=0.0)
-    crossover_n: int | None = None
+    speedup_at_max_n: float | None = Field(default=None, gt=0.0)
+    crossover_n: int | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
-    def validate_equivalence_reason(self) -> "VerifyReport":
-        """Validate rejected_reason based on equivalence status."""
+    def validate_equivalence_rules(self) -> "VerifyReport":
+        """Validate rejected_reason, speedup_at_max_n, and workloads per D-1."""
         if not self.equivalent:
             if not self.rejected_reason:
                 raise ValueError("rejected_reason is required when equivalent is False")
+            if self.speedup_at_max_n is not None:
+                raise ValueError(
+                    "speedup_at_max_n must be None when equivalent is False"
+                )
         else:
             if self.rejected_reason is not None:
                 raise ValueError("rejected_reason must be None when equivalent is True")
+            if self.speedup_at_max_n is None:
+                raise ValueError("speedup_at_max_n is required when equivalent is True")
+            if not self.workloads:
+                raise ValueError("workloads cannot be empty when equivalent is True")
         return self

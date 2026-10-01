@@ -66,13 +66,22 @@
       "type": "array"
     },
     "speedup_at_max_n": {
-      "exclusiveMinimum": 0.0,
-      "title": "Speedup At Max N",
-      "type": "number"
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Speedup At Max N"
     },
     "crossover_n": {
       "anyOf": [
         {
+          "exclusiveMinimum": 0,
           "type": "integer"
         },
         {
@@ -86,8 +95,7 @@
   "required": [
     "candidate_id",
     "equivalent",
-    "workloads",
-    "speedup_at_max_n"
+    "workloads"
   ],
   "title": "VerifyReport",
   "type": "object"
