@@ -5,9 +5,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from verifieds.schemas.models import Finding, Candidate, VerifyReport
+from verifieds.schemas.models import CandidateDraft, Finding, Candidate, VerifyReport
 
 MODELS = {
+    "candidate_draft.json": CandidateDraft,
     "finding.json": Finding,
     "candidate.json": Candidate,
     "verify_report.json": VerifyReport,

@@ -15,10 +15,12 @@
       "type": "string"
     },
     "start_line": {
+      "minimum": 1,
       "title": "Start Line",
       "type": "integer"
     },
     "end_line": {
+      "minimum": 1,
       "title": "End Line",
       "type": "integer"
     },

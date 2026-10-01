@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+tests/test_proposer.py
+tests/test_schemas.py
+tests/test_smoke.py
+verifieds/__init__.py
+verifieds.egg-info/PKG-INFO
+verifieds.egg-info/SOURCES.txt
+verifieds.egg-info/dependency_links.txt
+verifieds.egg-info/requires.txt
+verifieds.egg-info/top_level.txt
+verifieds/proposer/__init__.py
+verifieds/proposer/client.py
+verifieds/schemas/__init__.py
+verifieds/schemas/export.py
+verifieds/schemas/models.py

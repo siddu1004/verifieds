@@ -26,10 +26,5 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y cmake g++ cppcheck
 
-      - name: Install Ollama (version check only)
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama --version
-
       - name: make verify
         run: make verify

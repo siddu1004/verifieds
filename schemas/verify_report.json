@@ -5,18 +5,22 @@
       "description": "Performance measurement result for a single workload size n.",
       "properties": {
         "n": {
+          "exclusiveMinimum": 0,
           "title": "N",
           "type": "integer"
         },
         "original_ms_median": {
+          "minimum": 0.0,
           "title": "Original Ms Median",
           "type": "number"
         },
         "candidate_ms_median": {
+          "minimum": 0.0,
           "title": "Candidate Ms Median",
           "type": "number"
         },
         "runs": {
+          "exclusiveMinimum": 0,
           "title": "Runs",
           "type": "integer"
         }
@@ -62,6 +66,7 @@
       "type": "array"
     },
     "speedup_at_max_n": {
+      "exclusiveMinimum": 0.0,
       "title": "Speedup At Max N",
       "type": "number"
     },

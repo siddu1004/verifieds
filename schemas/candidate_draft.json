@@ -1,15 +1,7 @@
 {
   "additionalProperties": false,
-  "description": "Proposed candidate created by the pipeline from a Finding and CandidateDraft.",
+  "description": "Raw candidate modification proposed directly by the LLM (without system IDs).",
   "properties": {
-    "id": {
-      "title": "Id",
-      "type": "string"
-    },
-    "finding_id": {
-      "title": "Finding Id",
-      "type": "string"
-    },
     "strategy": {
       "title": "Strategy",
       "type": "string"
@@ -31,13 +23,11 @@
     }
   },
   "required": [
-    "id",
-    "finding_id",
     "strategy",
     "diff",
     "expected_complexity_after",
     "risks"
   ],
-  "title": "Candidate",
+  "title": "CandidateDraft",
   "type": "object"
 }

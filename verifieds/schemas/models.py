@@ -1,7 +1,18 @@
-"""Pydantic models for Finding, Candidate, and VerifyReport schemas."""
+"""Pydantic models for CandidateDraft, Finding, Candidate, and VerifyReport schemas."""
 
 from typing import Literal
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+class CandidateDraft(BaseModel):
+    """Raw candidate modification proposed directly by the LLM (without system IDs)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    strategy: str
+    diff: str
+    expected_complexity_after: str
+    risks: list[str]
 
 
 class Finding(BaseModel):
@@ -12,16 +23,25 @@ class Finding(BaseModel):
     id: str
     rule_id: str
     file: str
-    start_line: int
-    end_line: int
+    start_line: int = Field(ge=1)
+    end_line: int = Field(ge=1)
     adt: Literal["queue", "stack", "priority_queue", "list", "sort", "search"]
     impl: str
     complexity_before: str
     evidence: str
 
+    @model_validator(mode="after")
+    def validate_line_numbers(self) -> "Finding":
+        """Validate start_line <= end_line."""
+        if self.start_line > self.end_line:
+            raise ValueError(
+                f"start_line ({self.start_line}) must be <= end_line ({self.end_line})"
+            )
+        return self
+
 
 class Candidate(BaseModel):
-    """Proposed data structure or algorithm modification candidate."""
+    """Proposed candidate created by the pipeline from a Finding and CandidateDraft."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -38,10 +58,10 @@ class WorkloadResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    n: int
-    original_ms_median: float
-    candidate_ms_median: float
-    runs: int
+    n: int = Field(gt=0)
+    original_ms_median: float = Field(ge=0.0)
+    candidate_ms_median: float = Field(ge=0.0)
+    runs: int = Field(gt=0)
 
 
 class VerifyReport(BaseModel):
@@ -53,5 +73,16 @@ class VerifyReport(BaseModel):
     equivalent: bool
     rejected_reason: str | None = None
     workloads: list[WorkloadResult]
-    speedup_at_max_n: float
+    speedup_at_max_n: float = Field(gt=0.0)
     crossover_n: int | None = None
+
+    @model_validator(mode="after")
+    def validate_equivalence_reason(self) -> "VerifyReport":
+        """Validate rejected_reason based on equivalence status."""
+        if not self.equivalent:
+            if not self.rejected_reason:
+                raise ValueError("rejected_reason is required when equivalent is False")
+        else:
+            if self.rejected_reason is not None:
+                raise ValueError("rejected_reason must be None when equivalent is True")
+        return self
