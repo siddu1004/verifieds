@@ -1,4 +1,4 @@
-"""Tests for Pydantic schemas and validation constraints (S-04 / R-01)."""
+"""Tests for Pydantic schemas and validation constraints (S-04 / R-01 / D-1)."""
 
 import json
 from pathlib import Path
@@ -64,7 +64,6 @@ def test_finding_invalid_adt_rejected() -> None:
 
 def test_finding_line_number_constraints() -> None:
     """Finding line numbers must be >= 1 and start_line <= end_line."""
-    # start_line < 1
     with pytest.raises(ValidationError):
         Finding(
             id="h1",
@@ -78,7 +77,6 @@ def test_finding_line_number_constraints() -> None:
             evidence="ev",
         )
 
-    # start_line > end_line
     with pytest.raises(ValidationError):
         Finding(
             id="h1",
@@ -110,15 +108,12 @@ def test_candidate_valid_and_roundtrip() -> None:
 
 def test_workload_result_constraints() -> None:
     """WorkloadResult n > 0, runs > 0, times >= 0."""
-    # n <= 0
     with pytest.raises(ValidationError):
         WorkloadResult(n=0, original_ms_median=1.0, candidate_ms_median=0.5, runs=5)
 
-    # runs <= 0
     with pytest.raises(ValidationError):
         WorkloadResult(n=100, original_ms_median=1.0, candidate_ms_median=0.5, runs=0)
 
-    # times < 0
     with pytest.raises(ValidationError):
         WorkloadResult(n=100, original_ms_median=-0.1, candidate_ms_median=0.5, runs=5)
 
@@ -126,13 +121,13 @@ def test_workload_result_constraints() -> None:
         WorkloadResult(n=100, original_ms_median=1.0, candidate_ms_median=-0.5, runs=5)
 
 
-def test_verify_report_constraints() -> None:
-    """VerifyReport speedup > 0 and equivalence/rejected_reason rules."""
+def test_verify_report_constraints_and_decision_d1() -> None:
+    """VerifyReport validation rules per DECISION D-1."""
     workload = WorkloadResult(
         n=100, original_ms_median=1.0, candidate_ms_median=0.5, runs=5
     )
 
-    # Valid equivalent report
+    # Valid equivalent report: speedup required, workloads non-empty
     valid_eq = VerifyReport(
         candidate_id="c1",
         equivalent=True,
@@ -143,58 +138,59 @@ def test_verify_report_constraints() -> None:
     )
     assert valid_eq.equivalent is True
 
-    # Valid non-equivalent report
+    # Valid non-equivalent report: speedup None, rejected_reason required
     valid_neq = VerifyReport(
         candidate_id="c1",
         equivalent=False,
-        rejected_reason="Output hash mismatch on seed 42",
-        workloads=[workload],
-        speedup_at_max_n=2.0,
+        rejected_reason="Output mismatch",
+        workloads=[],
+        speedup_at_max_n=None,
         crossover_n=None,
     )
     assert valid_neq.equivalent is False
 
-    # speedup <= 0 rejected
+    # equivalent=True but speedup is None
     with pytest.raises(ValidationError):
         VerifyReport(
             candidate_id="c1",
             equivalent=True,
             rejected_reason=None,
             workloads=[workload],
-            speedup_at_max_n=0.0,
+            speedup_at_max_n=None,
             crossover_n=None,
         )
 
-    # equivalent=False requires rejected_reason
-    with pytest.raises(ValidationError):
-        VerifyReport(
-            candidate_id="c1",
-            equivalent=False,
-            rejected_reason=None,
-            workloads=[workload],
-            speedup_at_max_n=2.0,
-            crossover_n=None,
-        )
-
-    with pytest.raises(ValidationError):
-        VerifyReport(
-            candidate_id="c1",
-            equivalent=False,
-            rejected_reason="",
-            workloads=[workload],
-            speedup_at_max_n=2.0,
-            crossover_n=None,
-        )
-
-    # equivalent=True requires rejected_reason is None
+    # equivalent=True but workloads empty
     with pytest.raises(ValidationError):
         VerifyReport(
             candidate_id="c1",
             equivalent=True,
-            rejected_reason="Should not be here",
-            workloads=[workload],
+            rejected_reason=None,
+            workloads=[],
             speedup_at_max_n=2.0,
             crossover_n=None,
+        )
+
+    # equivalent=False but speedup is set
+    with pytest.raises(ValidationError):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=False,
+            rejected_reason="Output mismatch",
+            workloads=[],
+            speedup_at_max_n=2.0,
+            crossover_n=None,
+        )
+
+    # crossover_n <= 0
+    with pytest.raises(ValidationError):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=True,
+            rejected_reason=None,
+            workloads=[workload],
+            speedup_at_max_n=2.0,
+            crossover_n=0,
         )
 
 
@@ -208,14 +204,11 @@ def test_schema_export_and_check(tmp_path: Path) -> None:
     assert (schemas_dir / "candidate.json").exists()
     assert (schemas_dir / "verify_report.json").exists()
 
-    # Check passes when up-to-date
     assert check_schemas(schemas_dir) is True
 
-    # Check fails when missing a file
     (schemas_dir / "finding.json").unlink()
     assert check_schemas(schemas_dir) is False
 
-    # Corrupt one schema file to simulate staleness
     (schemas_dir / "finding.json").write_text(json.dumps({"stale": True}))
     assert check_schemas(schemas_dir) is False
 

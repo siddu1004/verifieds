@@ -138,8 +138,8 @@ class OllamaProposer:
         last_error: Exception | None = None
 
         for _ in range(attempts):
-            raw_response = self._post_generate(prompt)
             try:
+                raw_response = self._post_generate(prompt)
                 return self._parse_candidates(raw_response)
             except OllamaParseError as err:
                 last_error = err
