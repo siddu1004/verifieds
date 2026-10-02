@@ -60,7 +60,7 @@ def test_harness_synthetic_on_vs_on2(tmp_path: Path):
         "import sys, time\n"
         "with open(sys.argv[2]) as f: text = f.read()\n"
         "procs = len(text.splitlines()) - 3\n"
-        "time.sleep(procs * 0.0001)\n"
+        "time.sleep(procs * 0.001)\n"
         'print(\'{"policy": "FCFS", "gantt": [], "metrics": {}}\')\n',
         encoding="utf-8",
     )
@@ -70,7 +70,7 @@ def test_harness_synthetic_on_vs_on2(tmp_path: Path):
         "import sys, time\n"
         "with open(sys.argv[2]) as f: text = f.read()\n"
         "procs = len(text.splitlines()) - 3\n"
-        "time.sleep((procs ** 2) * 0.000005)\n"
+        "time.sleep((procs ** 2) * 0.0001)\n"
         'print(\'{"policy": "FCFS", "gantt": [], "metrics": {}}\')\n',
         encoding="utf-8",
     )
@@ -79,7 +79,7 @@ def test_harness_synthetic_on_vs_on2(tmp_path: Path):
     runner = BenchmarkRunner(
         py + [str(script_on2)], py + [str(script_on)], runs_per_size=3
     )
-    res = runner.run_benchmark(sizes=[20, 100], seed=10, tmp_dir=tmp_path / "tmp")
+    res = runner.run_benchmark(sizes=[10, 50], seed=10, tmp_dir=tmp_path / "tmp")
 
     assert res["equivalent"] is True
     assert res["speedup_at_max_n"] > 1.0

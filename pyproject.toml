@@ -5,8 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "verifieds"
 version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = ["pydantic==2.13.4"]
+dependencies = [
+    "pydantic==2.13.4",
+    "mcp==1.30.0",
+]
+
 
 [project.optional-dependencies]
 dev = [
@@ -30,6 +33,9 @@ python_version = "3.11"
 
 [tool.vulture]
 min_confidence = 80
+# Ignore MCP SDK tool registration decorators so registered tool functions are not flagged as unused
+ignore_decorators = ["@mcp.tool", "@mcp_server.tool", "@server.tool"]
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

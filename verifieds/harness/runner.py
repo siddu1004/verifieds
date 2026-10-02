@@ -2,7 +2,9 @@
 
 import hashlib
 import json
+import os
 import random
+import shutil
 import statistics
 import subprocess
 import sys
@@ -11,6 +13,15 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent.parent
+
+if sys.platform == "win32" and not shutil.which("g++"):
+    winget_pkg = Path(os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WinGet\Packages"))
+    for _cand in winget_pkg.glob("*WinLibs*/mingw64/bin"):
+        if (_cand / "g++.exe").exists():
+            os.environ["PATH"] = (
+                str(_cand) + os.path.pathsep + os.environ.get("PATH", "")
+            )
+            break
 
 
 def set_memory_limit(limit_bytes: int) -> None:

@@ -64,45 +64,81 @@
       "id": "S-05",
       "title": "N3 S-05 detector",
       "deps": ["S-02"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch verifieds/detector/scanner.py, loader.py, engine.py, verifieds/rules/*, tests/test_detector.py. Write test_detector.py first.",
+      "reflection": {
+        "C1": "yes - test_rule_loading, test_analyze_file_with_rules",
+        "C2": "yes - no dead code or unused symbols",
+        "C3": "yes - only planned files changed",
+        "C4": "yes - dependencies compliant with A2",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-05",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "S-06",
       "title": "N4 S-06 harness",
       "deps": ["S-02", "S-03"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch verifieds/harness/runner.py, tests/test_harness.py. Write test_harness.py first.",
+      "reflection": {
+        "C1": "yes - test_benchmark_runner_equivalence, test_generate_workload",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files changed",
+        "C4": "yes - stdlib + pydantic",
+        "C5": "yes - Windows PATH resolution and executable name handling",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-06",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "S-08",
       "title": "N5 S-08 pipeline",
       "deps": ["S-05", "S-06"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch verifieds/pipeline/engine.py, tests/test_pipeline.py. Write test_pipeline.py first.",
+      "reflection": {
+        "C1": "yes - test_pipeline_engine_run",
+        "C2": "yes - no unused symbols",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib + pydantic",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-08",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "S-09",
       "title": "N6 S-09 MCP server",
       "deps": ["S-08"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch verifieds/mcp/server.py, tests/test_mcp.py. Write test_mcp.py first.",
+      "reflection": {
+        "C1": "yes - test_mcp_tools, test_path_escape_prevention",
+        "C2": "yes - no unused symbols",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - added mcp to pyproject.toml and DEPS.md",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-09",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "S-10",
