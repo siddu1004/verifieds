@@ -304,12 +304,21 @@
       "id": "Q4",
       "title": "Q4 Workload-adequacy score",
       "deps": ["Q2"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch DECISIONS.md, verifieds/schemas/models.py, export.py, __init__.py, schemas/adequacy_report.json, verifieds/adequacy/*, docs/ADEQUACY.md, tests/test_adequacy.py. Write test_adequacy.py first.",
+      "reflection": {
+        "C1": "yes - test_mutator_operator_swaps, test_adequacy_report_model, test_invalid_mutants_excluded_from_score, test_synthetic_weak_vs_rich_workload, test_run_adequacy_assessment_in_process, test_cli_adequacy_runner_in_process, test_cli_adequacy_runner_subprocess",
+        "C2": "yes - no dead code or unused symbols",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib + pydantic; complies with A2",
+        "C5": "yes - Windows path handling verified",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q4",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "Q5",

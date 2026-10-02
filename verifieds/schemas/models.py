@@ -94,3 +94,27 @@ class VerifyReport(BaseModel):
             if not self.workloads:
                 raise ValueError("workloads cannot be empty when equivalent is True")
         return self
+
+
+class MutantResult(BaseModel):
+    """Result for a single mutation site test."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)
+
+    file: str
+    line: int = Field(ge=1)
+    from_op: str = Field(alias="from")
+    to_op: str = Field(alias="to")
+    status: Literal["killed", "survived", "invalid"]
+
+
+class AdequacyReport(BaseModel):
+    """Workload adequacy score and mutation testing report."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    mutants: list[MutantResult]
+    killed: int = Field(ge=0)
+    survived: int = Field(ge=0)
+    invalid: int = Field(ge=0)
+    score: float = Field(ge=0.0, le=1.0)
