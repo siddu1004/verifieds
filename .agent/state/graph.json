@@ -204,6 +204,101 @@
       "id": "RELEASE",
       "title": "N10 RELEASE",
       "deps": ["S-12"],
+      "state": "done",
+      "iter": 0,
+      "plan": "Master prompt backlog S-00..S-12 complete.",
+      "reflection": {
+        "C1": "yes - all S-00..S-12 tasks verified with evidence",
+        "C2": "yes - no dead code",
+        "C3": "yes - all planned files modified",
+        "C4": "yes - A2 compliant",
+        "C5": "yes - Windows paths supported",
+        "C6": "yes - evidence exit0",
+        "C7": "yes - no gates weakened",
+        "C8": "yes - sim/src A7 compliant"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q0",
+      "title": "Q0 Oracle and catalogue",
+      "deps": ["RELEASE"],
+      "state": "done",
+      "iter": 0,
+      "plan": "Touch tests/reference_scheduler.py, tests/test_reference_scheduler.py, docs/SCENARIOS.md, tests/conftest.py, tasks.py. Write test_reference_scheduler.py first.",
+      "reflection": {
+        "C1": "yes - test_reference_scheduler_set_a_fcfs, test_reference_scheduler_set_a_sjf, test_reference_scheduler_set_a_srtf, test_reference_scheduler_set_a_rr, test_reference_scheduler_set_a_priority, test_reference_scheduler_set_b",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files modified",
+        "C4": "yes - stdlib only",
+        "C5": "yes - win32 executable name handling in conftest.py",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q0",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q1",
+      "title": "Q1 Simulator scenarios",
+      "deps": ["Q0"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "Q2",
+      "title": "Q2 Pipeline scenarios",
+      "deps": ["Q1"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "Q3",
+      "title": "Q3 MCP scenario",
+      "deps": ["Q1"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "Q4",
+      "title": "Q4 Workload-adequacy score",
+      "deps": ["Q2"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "Q5",
+      "title": "Q5 Cross-platform goldens",
+      "deps": ["Q4"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "Q6",
+      "title": "Q6 Demo and claims audit",
+      "deps": ["Q3", "Q5"],
       "state": "pending",
       "iter": 0,
       "plan": "",
@@ -212,5 +307,5 @@
       "ci": ""
     }
   ],
-  "gate_passed": []
+  "gate_passed": ["G3"]
 }
