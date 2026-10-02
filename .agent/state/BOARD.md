@@ -14,7 +14,7 @@
 | N9 | S-12 | N9 S-12 docs | N7, N8 | done | 0 | exit0 | success |
 | N10 | RELEASE | N10 RELEASE | N9 | done | 0 | exit0 | success |
 | Q0 | Q0 | Q0 Oracle and catalogue | RELEASE | done | 0 | exit0 | success |
-| Q1 | Q1 | Q1 Simulator scenarios | Q0 | pending | 0 | none | none |
+| Q1 | Q1 | Q1 Simulator scenarios | Q0 | done | 0 | exit0 | success |
 | Q2 | Q2 | Q2 Pipeline scenarios | Q1 | pending | 0 | none | none |
 | Q3 | Q3 | Q3 MCP scenario | Q1 | pending | 0 | none | none |
 | Q4 | Q4 | Q4 Workload-adequacy score | Q2 | pending | 0 | none | none |

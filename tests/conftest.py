@@ -6,6 +6,8 @@ import subprocess
 import sys
 from typing import Any
 
+from verifieds.harness.runner import write_batch_file
+
 ROOT = Path(__file__).parent.parent
 
 
@@ -23,20 +25,9 @@ def run_batch(
     """Write batch file, run sim_cli executable, and return parsed JSON result."""
     work_dir = tmp_path or (ROOT / "build")
     work_dir.mkdir(parents=True, exist_ok=True)
-    batch_file = work_dir / "batch_input.json"
+    batch_file = work_dir / "batch_input.txt"
 
-    process_list = [
-        {"pid": p[0], "arrival": p[1], "burst": p[2], "priority": p[3]} for p in procs
-    ]
-    payload: dict[str, Any] = {
-        "policy": policy,
-        "backend": backend,
-        "processes": process_list,
-    }
-    if quantum is not None:
-        payload["quantum"] = quantum
-
-    batch_file.write_text(json.dumps(payload), encoding="utf-8")
+    write_batch_file(batch_file, procs, policy=policy, backend=backend, quantum=quantum)
 
     sim_cli = ROOT / "build" / exe_name("sim_cli")
     assert sim_cli.exists(), f"sim_cli executable not found at {sim_cli}"
