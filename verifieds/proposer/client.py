@@ -70,7 +70,7 @@ class OllamaProposer:
                 req, timeout=self.config.timeout_seconds
             ) as resp:
                 resp_bytes = resp.read()
-        except (urllib.error.URLError, TimeoutError) as err:
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as err:
             raise OllamaUnavailableError(
                 f"HTTP request to Ollama failed: {err}"
             ) from err
