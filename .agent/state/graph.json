@@ -44,9 +44,9 @@
       "id": "S-03",
       "title": "N2 S-03 CLI",
       "deps": ["S-02"],
-      "state": "pending",
+      "state": "active",
       "iter": 0,
-      "plan": "",
+      "plan": "Touch sim/src/Config.hpp, Sort.hpp, main.cpp, sim/CMakeLists.txt, tests/test_sim_cli.py. Write test_sim_cli.py first.",
       "reflection": {},
       "evidence": "",
       "ci": ""
