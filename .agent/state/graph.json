@@ -24,9 +24,9 @@
       "id": "S-02",
       "title": "N1 S-02 scheduler engine",
       "deps": ["R-05"],
-      "state": "pending",
+      "state": "active",
       "iter": 0,
-      "plan": "",
+      "plan": "Touch sim/src/Process.hpp, ReadyQueue.hpp, Scheduler.hpp, sim/CMakeLists.txt, sim/tests/test_scheduler.cpp. Write Golden Set A/B tests first.",
       "reflection": {},
       "evidence": "",
       "ci": ""
