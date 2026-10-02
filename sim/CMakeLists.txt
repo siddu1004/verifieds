@@ -32,3 +32,8 @@ add_test(NAME smoke COMMAND test_smoke)
 add_executable(test_structures tests/test_structures.cpp)
 target_link_libraries(test_structures PRIVATE sim_lib)
 add_test(NAME structures COMMAND test_structures)
+
+add_executable(test_scheduler tests/test_scheduler.cpp)
+target_link_libraries(test_scheduler PRIVATE sim_lib)
+add_test(NAME scheduler COMMAND test_scheduler)
+
