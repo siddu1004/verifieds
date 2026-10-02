@@ -1,6 +1,6 @@
 """Pydantic models for CandidateDraft, Finding, Candidate, and VerifyReport schemas."""
 
-from typing import Literal
+from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -94,6 +94,18 @@ class VerifyReport(BaseModel):
             if not self.workloads:
                 raise ValueError("workloads cannot be empty when equivalent is True")
         return self
+
+    def __getitem__(self, item: str) -> Any:
+        if item == "reason":
+            return self.rejected_reason
+        if hasattr(self, item):
+            return getattr(self, item)
+        raise KeyError(item)
+
+    def get(self, item: str, default: Any = None) -> Any:
+        if item == "reason":
+            return self.rejected_reason if self.rejected_reason is not None else default
+        return getattr(self, item, default)
 
 
 class MutantResult(BaseModel):

@@ -12,6 +12,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from verifieds.schemas.models import VerifyReport, WorkloadResult
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 
 if sys.platform == "win32" and not shutil.which("g++"):
@@ -37,14 +39,53 @@ def set_memory_limit(limit_bytes: int) -> None:
     resource.setrlimit(resource.RLIMIT_AS, (limit_bytes, limit_bytes))
 
 
+def compile_program(source_dir: Path, main_file: str, out_path: Path) -> Path:
+    """Compile C++ program using g++ -std=c++20 -O2 -I<source_dir>."""
+    gpp = shutil.which("g++")
+    if not gpp and sys.platform == "win32":
+        winget_pkg = Path(
+            os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WinGet\Packages")
+        )
+        for cand in winget_pkg.glob("*WinLibs*/mingw64/bin"):
+            if (cand / "g++.exe").exists():
+                gpp = str(cand / "g++.exe")
+                break
+    if not gpp:
+        raise RuntimeError("g++ compiler not found.")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    main_path = (
+        source_dir / main_file if not Path(main_file).is_absolute() else Path(main_file)
+    )
+
+    cmd = [
+        gpp,
+        "-std=c++20",
+        "-O2",
+        f"-I{source_dir}",
+        str(main_path),
+        "-o",
+        str(out_path),
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        msg = (
+            f"Compiler error (exit code {proc.returncode}):\n"
+            f"{proc.stderr}\n{proc.stdout}"
+        )
+        raise RuntimeError(msg)
+    return out_path
+
+
 def generate_workload(
     n: int,
     seed: int = 42,
-    policy: str = "FCFS",
+    path: Path | None = None,
+    policy: str = "SJF",
     quantum: int | None = None,
+    ties: bool = False,
 ) -> list[tuple[int, int, int, int]]:
     """Generate workload of n processes: (pid, arrival, burst, priority)."""
-    _ = quantum
     rng = random.Random(seed)
     procs: list[tuple[int, int, int, int]] = []
     current_arr = 0
@@ -54,7 +95,10 @@ def generate_workload(
         else:
             current_arr += rng.randint(3, 8)
 
-        if policy in ("SJF", "SRTF"):
+        if ties:
+            burst = rng.choice([1, 2, 3])
+            priority = rng.choice([1, 2])
+        elif policy in ("SJF", "SRTF"):
             burst = rng.choice([1, 2, 3, 4, 5, 8])
             priority = rng.randint(1, 10)
         elif policy == "PRIORITY":
@@ -65,13 +109,17 @@ def generate_workload(
             priority = rng.randint(1, 10)
 
         procs.append((pid, current_arr, burst, priority))
+
+    if path is not None:
+        write_batch_file(path, procs, policy=policy, quantum=quantum)
+
     return procs
 
 
 def write_batch_file(
     path: Path,
     procs: list[tuple[int, int, int, int]],
-    policy: str = "FCFS",
+    policy: str = "SJF",
     backend: str = "array",
     quantum: int | None = None,
 ) -> None:
@@ -83,6 +131,7 @@ def write_batch_file(
     for pid, arr, burst, prio in procs:
         lines.append(f"{pid} {arr} {burst} {prio}")
     lines.append("")
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -93,11 +142,13 @@ class BenchmarkRunner:
         self,
         orig_cmd: list[str],
         cand_cmd: list[str],
+        candidate_id: str = "c1",
         runs_per_size: int = 7,
         timeout_sec: float = 10.0,
     ) -> None:
         self.orig_cmd = orig_cmd
         self.cand_cmd = cand_cmd
+        self.candidate_id = candidate_id
         self.runs_per_size = runs_per_size
         self.timeout_sec = timeout_sec
 
@@ -121,11 +172,11 @@ class BenchmarkRunner:
     def run_benchmark(
         self,
         sizes: list[int] | None = None,
-        policy: str = "FCFS",
+        policy: str = "SJF",
         quantum: int | None = None,
         seed: int = 42,
         tmp_dir: Path | None = None,
-    ) -> dict[str, Any]:
+    ) -> VerifyReport:
         """Run benchmark over workload sizes and compute crossover_n and speedup."""
         if sizes is None:
             sizes = [100, 1000, 10000]
@@ -138,6 +189,7 @@ class BenchmarkRunner:
         cand_times: dict[int, list[float]] = {}
         equivalent = True
         mismatch_reason: str | None = None
+        workload_results: list[WorkloadResult] = []
 
         for n in sizes:
             workload = generate_workload(
@@ -191,13 +243,24 @@ class BenchmarkRunner:
             orig_times[n] = o_runtimes
             cand_times[n] = c_runtimes
 
+            med_o = statistics.median(o_runtimes) * 1000.0
+            med_c = statistics.median(c_runtimes) * 1000.0
+            workload_results.append(
+                WorkloadResult(
+                    n=n,
+                    original_ms_median=round(med_o, 3),
+                    candidate_ms_median=round(med_c, 3),
+                    runs=self.runs_per_size,
+                )
+            )
+
         if not equivalent:
-            return {
-                "equivalent": False,
-                "reason": mismatch_reason,
-                "crossover_n": None,
-                "speedup_at_max_n": None,
-            }
+            return VerifyReport(
+                candidate_id=self.candidate_id,
+                equivalent=False,
+                rejected_reason=mismatch_reason or "Output mismatch",
+                workloads=[],
+            )
 
         # Calculate medians and crossover
         medians_orig = {n: statistics.median(orig_times[n]) for n in sizes}
@@ -219,23 +282,42 @@ class BenchmarkRunner:
                 crossover_n = n
                 break
 
-        return {
-            "equivalent": True,
-            "crossover_n": crossover_n,
-            "speedup_at_max_n": speedup,
-            "medians_orig": medians_orig,
-            "medians_cand": medians_cand,
-        }
+        return VerifyReport(
+            candidate_id=self.candidate_id,
+            equivalent=True,
+            rejected_reason=None,
+            workloads=workload_results,
+            speedup_at_max_n=round(max(speedup, 0.001), 4),
+            crossover_n=crossover_n,
+        )
 
 
 def compare(
-    orig_cmd: list[str],
-    cand_cmd: list[str],
+    original: Path | list[str] | str,
+    candidate: Path | list[str] | str,
+    candidate_id: str = "c1",
     sizes: list[int] | None = None,
-    policy: str = "FCFS",
+    runs: int = 7,
+    seed: int = 1234,
+    *,
+    timer: Any = time.perf_counter,
+    policy: str = "SJF",
     quantum: int | None = None,
-    seed: int = 42,
-) -> dict[str, Any]:
-    """Top-level compare function."""
-    runner = BenchmarkRunner(orig_cmd, cand_cmd)
+) -> VerifyReport:
+    """Top-level compare function (CompareFn signature)."""
+    _ = timer
+    orig_cmd = (
+        [str(original)]
+        if isinstance(original, (str, Path))
+        else [str(x) for x in original]
+    )
+    cand_cmd = (
+        [str(candidate)]
+        if isinstance(candidate, (str, Path))
+        else [str(x) for x in candidate]
+    )
+
+    runner = BenchmarkRunner(
+        orig_cmd, cand_cmd, candidate_id=candidate_id, runs_per_size=runs
+    )
     return runner.run_benchmark(sizes=sizes, policy=policy, quantum=quantum, seed=seed)

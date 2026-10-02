@@ -2,13 +2,13 @@
 
 import sys
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from verifieds.detector.engine import analyze_file as detector_analyze_file
 from verifieds.harness.runner import BenchmarkRunner
 from verifieds.proposer.client import OllamaProposer
-from verifieds.schemas.models import Candidate, VerifyReport, WorkloadResult
+from verifieds.schemas.models import Candidate, VerifyReport
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -97,38 +97,13 @@ def create_mcp_server(
         if target_finding is None:
             raise ValueError(f"No finding matching candidate_id '{candidate_id}'")
 
-        runner = BenchmarkRunner(orig_cmd=base_cmd, cand_cmd=base_cmd, runs_per_size=3)
-        res = runner.run_benchmark(sizes=[20, 50])
-
-        if not res["equivalent"]:
-            report = VerifyReport(
-                candidate_id=candidate_id,
-                equivalent=False,
-                rejected_reason=cast(str | None, res.get("reason"))
-                or "Output mismatch",
-                workloads=[],
-                speedup_at_max_n=None,
-                crossover_n=None,
-            )
-        else:
-            workloads = [
-                WorkloadResult(
-                    n=n,
-                    original_ms_median=res["medians_orig"][n] * 1000.0,
-                    candidate_ms_median=res["medians_cand"][n] * 1000.0,
-                    runs=3,
-                )
-                for n in [20, 50]
-            ]
-            report = VerifyReport(
-                candidate_id=candidate_id,
-                equivalent=True,
-                rejected_reason=None,
-                workloads=workloads,
-                speedup_at_max_n=cast(float | None, res["speedup_at_max_n"]),
-                crossover_n=cast(int | None, res["crossover_n"]),
-            )
-
+        runner = BenchmarkRunner(
+            orig_cmd=base_cmd,
+            cand_cmd=base_cmd,
+            candidate_id=candidate_id,
+            runs_per_size=3,
+        )
+        report = runner.run_benchmark(sizes=[20, 50])
         return report.model_dump()
 
     @server.tool(

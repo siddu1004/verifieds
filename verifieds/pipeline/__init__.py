@@ -1,5 +1,5 @@
-"""Pipeline package for automated detection, proposal, verification, and reporting."""
+"""Pipeline package for candidate proposal, verification, and benchmarking."""
 
-from verifieds.pipeline.engine import PipelineEngine, run_pipeline
+from verifieds.pipeline.engine import make_verify_diff, run_pipeline
 
-__all__ = ["PipelineEngine", "run_pipeline"]
+__all__ = ["make_verify_diff", "run_pipeline"]

@@ -153,8 +153,8 @@ def check_imports():
     return 1 if bad else 0
 
 
-def py():
-    steps = [
+def static_steps():
+    return [
         ("ruff-check", lambda: run(python_m("ruff", "check", "."))),
         ("ruff-format", lambda: run(python_m("ruff", "format", "--check", "."))),
         ("mypy", lambda: run(python_m("mypy", "--strict", "verifieds"))),
@@ -164,8 +164,15 @@ def py():
         ),
         ("schemas", lambda: run(python_m("verifieds.schemas.export", "--check"))),
         ("imports", check_imports),
-        ("pytest", lambda: run(python_m("pytest"))),
     ]
+
+
+def quick():
+    return run_steps(static_steps())
+
+
+def py():
+    steps = [*static_steps(), ("pytest", lambda: run(python_m("pytest")))]
     return run_steps(steps)
 
 
@@ -194,7 +201,7 @@ def git_output(*args):
     return out.stdout.strip()
 
 
-def evidence(task):
+def evidence(task, fast=False):
     global LOG
     sha = git_output("rev-parse", "HEAD")
     dirty = git_output(
@@ -210,7 +217,8 @@ def evidence(task):
         emit(f"date={stamp}")
         emit(f"platform={sys.platform}")
         emit(f"dirty={len(dirty.splitlines())}")
-        code = tools_check() or verify()
+        emit("mode=" + ("quick" if fast else "full"))
+        code = tools_check() or (quick() if fast else verify())
         emit(f"exit={code}")
         LOG = None
     return code
@@ -220,17 +228,27 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",
-        choices=["tools-check", "build-sim", "sim", "py", "verify", "evidence"],
+        choices=[
+            "tools-check",
+            "build-sim",
+            "sim",
+            "py",
+            "quick",
+            "verify",
+            "evidence",
+        ],
     )
     parser.add_argument("--task", default="manual")
+    parser.add_argument("--fast", action="store_true")
     args = parser.parse_args()
     if args.command == "evidence":
-        return evidence(args.task)
+        return evidence(args.task, args.fast)
     table = {
         "tools-check": tools_check,
         "build-sim": build_sim,
         "sim": sim,
         "py": py,
+        "quick": quick,
         "verify": verify,
     }
     return table[args.command]()

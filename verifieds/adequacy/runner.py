@@ -103,14 +103,14 @@ def run_single_mutant(
     for p_idx, (policy, quantum) in enumerate(policies):
         try:
             res = compare(
-                orig_cmd=[str(orig_cli_path)],
-                cand_cmd=[str(mutant_exe)],
+                original=[str(orig_cli_path)],
+                candidate=[str(mutant_exe)],
                 sizes=[10, 30],
                 policy=policy,
                 quantum=quantum,
                 seed=seed + idx * 10 + p_idx,
             )
-            if not res.get("equivalent", False):
+            if not res.equivalent:
                 is_killed = True
                 break
         except Exception:
