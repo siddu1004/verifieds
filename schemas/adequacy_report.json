@@ -72,6 +72,19 @@
       "minimum": 0.0,
       "title": "Score",
       "type": "number"
+    },
+    "test_support_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Test Support Count",
+      "type": "integer"
+    },
+    "score_excluding_test_support": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score Excluding Test Support",
+      "type": "number"
     }
   },
   "required": [

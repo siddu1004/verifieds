@@ -130,3 +130,5 @@ class AdequacyReport(BaseModel):
     survived: int = Field(ge=0)
     invalid: int = Field(ge=0)
     score: float = Field(ge=0.0, le=1.0)
+    test_support_count: int = Field(default=0, ge=0)
+    score_excluding_test_support: float = Field(default=0.0, ge=0.0, le=1.0)

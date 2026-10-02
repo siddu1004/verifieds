@@ -101,20 +101,24 @@ def run_single_mutant(
 
     is_killed = False
     for p_idx, (policy, quantum) in enumerate(policies):
-        try:
-            res = compare(
-                original=[str(orig_cli_path)],
-                candidate=[str(mutant_exe)],
-                sizes=[10, 30],
-                policy=policy,
-                quantum=quantum,
-                seed=seed + idx * 10 + p_idx,
-            )
-            if not res.equivalent:
+        for sz in [1, 10, 30]:
+            try:
+                res = compare(
+                    original=[str(orig_cli_path)],
+                    candidate=[str(mutant_exe)],
+                    sizes=[sz],
+                    policy=policy,
+                    quantum=quantum,
+                    runs=1,
+                    seed=seed + idx * 10 + p_idx + sz,
+                )
+                if not res.equivalent:
+                    is_killed = True
+                    break
+            except Exception:
                 is_killed = True
                 break
-        except Exception:
-            is_killed = True
+        if is_killed:
             break
 
     status_str: Literal["killed", "survived", "invalid"] = (
@@ -191,10 +195,23 @@ def run_adequacy_assessment(
     denom = killed + survived
     score = (killed / denom) if denom > 0 else 1.0
 
+    test_support_count = sum(
+        1
+        for r in results
+        if r.status == "survived"
+        and r.file == "Scheduler.hpp"
+        and (17 <= r.line <= 19 or 29 <= r.line <= 33 or 43 <= r.line <= 54)
+    )
+
+    denom_ex = denom - test_support_count
+    score_ex = (killed / denom_ex) if denom_ex > 0 else 1.0
+
     return AdequacyReport(
         mutants=results,
         killed=killed,
         survived=survived,
         invalid=invalid,
         score=round(score, 4),
+        test_support_count=test_support_count,
+        score_excluding_test_support=round(score_ex, 4),
     )

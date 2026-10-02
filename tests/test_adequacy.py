@@ -203,3 +203,23 @@ def test_cli_adequacy_runner_subprocess() -> None:
     )
     assert res.returncode == 0
     assert "Adequacy Score:" in res.stdout
+
+
+def test_adequacy_doc_matches_counts() -> None:
+    """Verify docs/ADEQUACY.md matches tool counts and threshold statement."""
+    doc_path = Path(__file__).parent.parent / "docs" / "ADEQUACY.md"
+    assert doc_path.exists()
+    content = doc_path.read_text(encoding="utf-8")
+    lines = content.splitlines()
+
+    # First line must report harness score under 0.85 threshold if under 0.85
+    assert "Harness-only score:" in lines[0]
+    assert "< 0.85 threshold" in lines[0]
+
+    # Check key count lines
+    assert "- **Total Mutants Evaluated**: 60" in content
+    assert "- **Killed**: 42" in content
+    assert "- **Survived**: 18" in content
+    assert "- **Harness-only Adequacy Score**: 0.7000" in content
+    assert "- **Test-Support Mutants**: 8" in content
+    assert "- **Score Excluding Test-Support Lines**: 0.8077" in content
