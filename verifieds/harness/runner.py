@@ -44,17 +44,26 @@ def generate_workload(
     quantum: int | None = None,
 ) -> list[tuple[int, int, int, int]]:
     """Generate workload of n processes: (pid, arrival, burst, priority)."""
-    _ = (policy, quantum)
+    _ = quantum
     rng = random.Random(seed)
     procs: list[tuple[int, int, int, int]] = []
     current_arr = 0
     for pid in range(1, n + 1):
         if rng.random() < 0.7:
-            current_arr += rng.randint(0, 3)
+            current_arr += rng.randint(0, 2)
         else:
-            current_arr += rng.randint(4, 15)
-        burst = rng.randint(1, 20)
-        priority = rng.randint(1, 10)
+            current_arr += rng.randint(3, 8)
+
+        if policy in ("SJF", "SRTF"):
+            burst = rng.choice([1, 2, 3, 4, 5, 8])
+            priority = rng.randint(1, 10)
+        elif policy == "PRIORITY":
+            burst = rng.randint(1, 15)
+            priority = rng.choice([1, 2, 3, 4])
+        else:
+            burst = rng.randint(1, 20)
+            priority = rng.randint(1, 10)
+
         procs.append((pid, current_arr, burst, priority))
     return procs
 

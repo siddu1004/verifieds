@@ -5,13 +5,20 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from verifieds.schemas.models import CandidateDraft, Finding, Candidate, VerifyReport
+from verifieds.schemas.models import (
+    CandidateDraft,
+    Finding,
+    Candidate,
+    VerifyReport,
+    AdequacyReport,
+)
 
 MODELS = {
     "candidate_draft.json": CandidateDraft,
     "finding.json": Finding,
     "candidate.json": Candidate,
     "verify_report.json": VerifyReport,
+    "adequacy_report.json": AdequacyReport,
 }
 
 
@@ -35,8 +42,8 @@ def check_schemas(target_dir: Path) -> bool:
         filepath = target_dir / filename
         if not filepath.exists():
             return False
-        expected = generate_schema_json(model_cls)
-        actual = filepath.read_text(encoding="utf-8")
+        expected = generate_schema_json(model_cls).replace("\r\n", "\n")
+        actual = filepath.read_text(encoding="utf-8").replace("\r\n", "\n")
         if actual != expected:
             return False
     return True

@@ -6,6 +6,8 @@ from verifieds.schemas.models import (
     Candidate,
     VerifyReport,
     WorkloadResult,
+    MutantResult,
+    AdequacyReport,
 )
 
 __all__ = [
@@ -14,4 +16,6 @@ __all__ = [
     "Candidate",
     "VerifyReport",
     "WorkloadResult",
+    "MutantResult",
+    "AdequacyReport",
 ]
