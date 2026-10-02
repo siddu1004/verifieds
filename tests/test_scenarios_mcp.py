@@ -132,8 +132,10 @@ def test_mcp_error_scenarios() -> None:
             validate_workspace_path("../../outside.cpp")
 
         # Path escape (absolute outside)
+        from tests.test_safety import get_outside_workspace_path
+
         with pytest.raises(ValueError, match="Path escape attempt blocked"):
-            validate_workspace_path("C:/Windows/System32/cmd.exe")
+            validate_workspace_path(get_outside_workspace_path())
 
         # Unknown finding id
         with pytest.raises(Exception, match="Unknown finding id"):

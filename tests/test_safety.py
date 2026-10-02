@@ -1,12 +1,20 @@
 """Safety tests for VerifiedDS (S-10)."""
 
 from pathlib import Path
+import tempfile
 import pytest
 
 from verifieds.detector.engine import analyze_file
 from verifieds.mcp.server import validate_workspace_path
 from verifieds.proposer.client import OllamaProposer
 from verifieds.schemas.models import Finding
+
+
+def get_outside_workspace_path() -> str:
+    """Return absolute path guaranteed to be outside workspace root across platforms."""
+    outside_dir = Path(tempfile.gettempdir()).resolve() / "vds_outside_workspace"
+    outside_dir.mkdir(parents=True, exist_ok=True)
+    return str((outside_dir / "x.txt").resolve())
 
 
 def test_prompt_injection_ignored(tmp_path: Path) -> None:
@@ -49,7 +57,17 @@ def test_harness_workspace_isolation() -> None:
         validate_workspace_path("../outside_file.cpp")
 
     with pytest.raises(ValueError, match="Path escape attempt blocked"):
-        validate_workspace_path("C:/Windows/System32/cmd.exe")
+        validate_workspace_path(get_outside_workspace_path())
+
+
+def test_outside_workspace_path_is_absolute_and_outside() -> None:
+    """Assert helper path is absolute and not inside workspace root."""
+    path_str = get_outside_workspace_path()
+    path_obj = Path(path_str).resolve()
+    assert path_obj.is_absolute()
+    workspace_root = Path(__file__).parent.parent.resolve()
+    with pytest.raises(ValueError):
+        path_obj.relative_to(workspace_root)
 
 
 def test_env_secrets_not_leaked(monkeypatch: pytest.MonkeyPatch) -> None:
