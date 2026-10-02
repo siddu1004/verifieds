@@ -37,3 +37,7 @@ add_executable(test_scheduler tests/test_scheduler.cpp)
 target_link_libraries(test_scheduler PRIVATE sim_lib)
 add_test(NAME scheduler COMMAND test_scheduler)
 
+add_executable(sim_cli src/main.cpp)
+target_link_libraries(sim_cli PRIVATE sim_lib)
+
+
