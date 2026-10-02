@@ -1,0 +1,7 @@
+{
+  "rule_id": "array-queue-front-removal",
+  "adt": "queue",
+  "impl": "DynArray linear pop_front shift",
+  "complexity_before": "O(n)",
+  "description": "Loop body shifts array elements left during queue dequeue operation"
+}

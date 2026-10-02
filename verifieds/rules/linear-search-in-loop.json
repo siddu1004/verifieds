@@ -1,0 +1,7 @@
+{
+  "rule_id": "linear-search-in-loop",
+  "adt": "search",
+  "impl": "Linear search in loop",
+  "complexity_before": "O(n^2)",
+  "description": "Nested loop comparing array elements for equality with early return or break"
+}

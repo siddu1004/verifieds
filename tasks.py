@@ -17,6 +17,20 @@ BUILD = ROOT / "build"
 THIRD_PARTY = {"pydantic", "pytest", "mcp", "verifieds"}
 LOG = None
 
+if WINDOWS:
+    import os
+
+    if not shutil.which("g++"):
+        winget_pkg = Path(
+            os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WinGet\Packages")
+        )
+        for candidate in winget_pkg.glob("*WinLibs*/mingw64/bin"):
+            if (candidate / "g++.exe").exists():
+                os.environ["PATH"] = (
+                    str(candidate) + os.path.pathsep + os.environ.get("PATH", "")
+                )
+                break
+
 
 def emit(text):
     print(text, flush=True)

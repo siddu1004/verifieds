@@ -1,0 +1,7 @@
+{
+  "rule_id": "linear-min-extract",
+  "adt": "priority_queue",
+  "impl": "Unsorted array linear min-scan",
+  "complexity_before": "O(n)",
+  "description": "Loop comparing array elements to extract minimum element index"
+}
