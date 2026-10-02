@@ -1,0 +1,60 @@
+{
+  "policy": "PRIORITY",
+  "backend": "array",
+  "gantt": [
+    {
+      "pid": 1,
+      "start": 0,
+      "end": 10
+    },
+    {
+      "pid": 2,
+      "start": 10,
+      "end": 14
+    },
+    {
+      "pid": 4,
+      "start": 14,
+      "end": 15
+    },
+    {
+      "pid": 3,
+      "start": 15,
+      "end": 17
+    }
+  ],
+  "metrics": [
+    {
+      "pid": 1,
+      "completion": 10,
+      "turnaround": 10,
+      "waiting": 0,
+      "response": 0
+    },
+    {
+      "pid": 2,
+      "completion": 14,
+      "turnaround": 13,
+      "waiting": 9,
+      "response": 9
+    },
+    {
+      "pid": 3,
+      "completion": 17,
+      "turnaround": 15,
+      "waiting": 13,
+      "response": 13
+    },
+    {
+      "pid": 4,
+      "completion": 15,
+      "turnaround": 12,
+      "waiting": 11,
+      "response": 11
+    }
+  ],
+  "avg_waiting": 8.25,
+  "avg_turnaround": 12.5,
+  "avg_response": 8.25,
+  "context_switches": 3
+}

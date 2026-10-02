@@ -1,0 +1,60 @@
+{
+  "policy": "FCFS",
+  "backend": "array",
+  "gantt": [
+    {
+      "pid": 1,
+      "start": 0,
+      "end": 10
+    },
+    {
+      "pid": 2,
+      "start": 10,
+      "end": 14
+    },
+    {
+      "pid": 3,
+      "start": 14,
+      "end": 16
+    },
+    {
+      "pid": 4,
+      "start": 16,
+      "end": 17
+    }
+  ],
+  "metrics": [
+    {
+      "pid": 1,
+      "completion": 10,
+      "turnaround": 10,
+      "waiting": 0,
+      "response": 0
+    },
+    {
+      "pid": 2,
+      "completion": 14,
+      "turnaround": 13,
+      "waiting": 9,
+      "response": 9
+    },
+    {
+      "pid": 3,
+      "completion": 16,
+      "turnaround": 14,
+      "waiting": 12,
+      "response": 12
+    },
+    {
+      "pid": 4,
+      "completion": 17,
+      "turnaround": 14,
+      "waiting": 13,
+      "response": 13
+    }
+  ],
+  "avg_waiting": 8.5,
+  "avg_turnaround": 12.75,
+  "avg_response": 8.5,
+  "context_switches": 3
+}
