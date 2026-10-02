@@ -33,14 +33,14 @@ private:
         return node;
     }
 
-    Node* find_min(Node* node) const noexcept {
+    static Node* find_min(Node* node) noexcept {
         while (node != nullptr && node->left != nullptr) {
             node = node->left;
         }
         return node;
     }
 
-    Node* remove_rec(Node* node, const T& val, bool& removed) {
+    static Node* remove_rec(Node* node, const T& val, bool& removed) {
         if (node == nullptr) {
             return nullptr;
         }
@@ -75,7 +75,7 @@ private:
         return node;
     }
 
-    bool search_rec(Node* node, const T& val) const noexcept {
+    static bool search_rec(Node* node, const T& val) noexcept {
         if (node == nullptr) {
             return false;
         }
@@ -88,7 +88,7 @@ private:
         return true;
     }
 
-    void in_order_rec(Node* node, DynArray<T>& result) const {
+    static void in_order_rec(Node* node, DynArray<T>& result) {
         if (node != nullptr) {
             in_order_rec(node->left, result);
             result.push_back(node->data);
@@ -96,7 +96,7 @@ private:
         }
     }
 
-    void pre_order_rec(Node* node, DynArray<T>& result) const {
+    static void pre_order_rec(Node* node, DynArray<T>& result) {
         if (node != nullptr) {
             result.push_back(node->data);
             pre_order_rec(node->left, result);
@@ -104,7 +104,7 @@ private:
         }
     }
 
-    void post_order_rec(Node* node, DynArray<T>& result) const {
+    static void post_order_rec(Node* node, DynArray<T>& result) {
         if (node != nullptr) {
             post_order_rec(node->left, result);
             post_order_rec(node->right, result);
@@ -112,7 +112,7 @@ private:
         }
     }
 
-    void destroy(Node* node) noexcept {
+    static void destroy(Node* node) noexcept {
         if (node != nullptr) {
             destroy(node->left);
             destroy(node->right);

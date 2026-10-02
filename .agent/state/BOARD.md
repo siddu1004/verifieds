@@ -1,17 +1,15 @@
 # Board
 
-| Task | Deps | Owner | Status | Branch | Last verify |
-|---|---|---|---|---|---|
-| S-00 | none | builder-sim | accepted | integration | verify-py ✅ R-00 hygiene passed |
-| S-01 | S-00 | builder-sim | accepted | integration | verify-py ✅ R-04 C++ headers clean |
-| S-02 | S-01 | builder-sim | ready | task/S-02 | |
-| S-03 | S-02 | builder-sim | todo | task/S-03 | |
-| S-04 | S-00 | builder-contracts | accepted | integration | verify-py ✅ R-01 schema tightened (97.7% cov) |
-| S-07 | S-04 | builder-contracts | accepted | integration | verify-py ✅ R-02 proposer fixed (95.1% cov) |
-| S-05 | S-02, S-04 | builder-analysis | todo | task/S-05 | |
-| S-06 | S-02, S-04 | builder-analysis | todo | task/S-06 | |
-| S-08 | S-05, S-06, S-07 | builder-analysis | todo | task/S-08 | |
-| S-09 | S-08 | builder-contracts | todo | task/S-09 | |
-| S-10 | S-09 | builder-analysis | todo | task/S-10 | |
-| S-11 | S-08 | builder-contracts | todo | task/S-11 | |
-| S-12 | S-03, S-10, S-11 | scribe | todo | task/S-12 | |
+| Node | Task ID | Title | Deps | State | Iter | Evidence | CI |
+|---|---|---|---|---|---|---|---|
+| N0 | R-05 | N0 BOOT | none | active | 0 | pending | pending |
+| N1 | S-02 | N1 S-02 scheduler engine | N0 | pending | 0 | none | none |
+| N2 | S-03 | N2 S-03 CLI | N1 | pending | 0 | none | none |
+| N3 | S-05 | N3 S-05 detector | N1 | pending | 0 | none | none |
+| N4 | S-06 | N4 S-06 harness | N1, N2 | pending | 0 | none | none |
+| N5 | S-08 | N5 S-08 pipeline | N3, N4 | pending | 0 | none | none |
+| N6 | S-09 | N6 S-09 MCP server | N5 | pending | 0 | none | none |
+| N7 | S-10 | N7 S-10 safety | N6 | pending | 0 | none | none |
+| N8 | S-11 | N8 S-11 study | N5 | pending | 0 | none | none |
+| N9 | S-12 | N9 S-12 docs | N7, N8 | pending | 0 | none | none |
+| N10 | RELEASE | N10 RELEASE | N9 | pending | 0 | none | none |

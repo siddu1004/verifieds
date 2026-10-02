@@ -147,7 +147,7 @@ void test_bst() {
     // Test exact in-order traversal: [20, 30, 40, 50, 60, 70, 80]
     DynArray<int> in = tree.in_order();
     assert(in.size() == 7);
-    int expected_in[] = {20, 30, 40, 50, 60, 70, 80};
+    const int expected_in[] = {20, 30, 40, 50, 60, 70, 80};
     for (std::size_t i = 0; i < in.size(); ++i) {
         assert(in[i] == expected_in[i]);
     }
@@ -155,7 +155,7 @@ void test_bst() {
     // Test exact pre-order traversal: [50, 30, 20, 40, 70, 60, 80]
     DynArray<int> pre = tree.pre_order();
     assert(pre.size() == 7);
-    int expected_pre[] = {50, 30, 20, 40, 70, 60, 80};
+    const int expected_pre[] = {50, 30, 20, 40, 70, 60, 80};
     for (std::size_t i = 0; i < pre.size(); ++i) {
         assert(pre[i] == expected_pre[i]);
     }
@@ -163,7 +163,7 @@ void test_bst() {
     // Test exact post-order traversal: [20, 40, 30, 60, 80, 70, 50]
     DynArray<int> post = tree.post_order();
     assert(post.size() == 7);
-    int expected_post[] = {20, 40, 30, 60, 80, 70, 50};
+    const int expected_post[] = {20, 40, 30, 60, 80, 70, 50};
     for (std::size_t i = 0; i < post.size(); ++i) {
         assert(post[i] == expected_post[i]);
     }
@@ -191,11 +191,16 @@ void test_bst() {
 }
 
 int main() {
-    test_dynarray();
-    test_stack();
-    test_circular_queue();
-    test_min_heap_and_heap_sort();
-    test_bst();
-    std::cout << "All S-01 structure tests passed successfully!\n";
-    return 0;
+    try {
+        test_dynarray();
+        test_stack();
+        test_circular_queue();
+        test_min_heap_and_heap_sort();
+        test_bst();
+        std::cout << "All S-01 structure tests passed successfully!\n";
+        return 0;
+    } catch (const std::exception& err) {
+        std::cerr << "Unhandled exception: " << err.what() << '\n';
+        return 1;
+    }
 }

@@ -1,0 +1,126 @@
+{
+  "nodes": [
+    {
+      "id": "R-05",
+      "title": "N0 BOOT",
+      "deps": [],
+      "state": "active",
+      "iter": 0,
+      "plan": "Boot environment, tasks.py, config, and preflight",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-02",
+      "title": "N1 S-02 scheduler engine",
+      "deps": ["R-05"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-03",
+      "title": "N2 S-03 CLI",
+      "deps": ["S-02"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-05",
+      "title": "N3 S-05 detector",
+      "deps": ["S-02"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-06",
+      "title": "N4 S-06 harness",
+      "deps": ["S-02", "S-03"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-08",
+      "title": "N5 S-08 pipeline",
+      "deps": ["S-05", "S-06"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-09",
+      "title": "N6 S-09 MCP server",
+      "deps": ["S-08"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-10",
+      "title": "N7 S-10 safety",
+      "deps": ["S-09"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-11",
+      "title": "N8 S-11 study",
+      "deps": ["S-08"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "S-12",
+      "title": "N9 S-12 docs",
+      "deps": ["S-10", "S-11"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "RELEASE",
+      "title": "N10 RELEASE",
+      "deps": ["S-12"],
+      "state": "pending",
+      "iter": 0,
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    }
+  ],
+  "gate_passed": []
+}
