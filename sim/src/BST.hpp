@@ -68,7 +68,7 @@ private:
                 return temp;
             }
             // Case 3: 2 children
-            Node* successor = find_min(node->right);
+            const Node* successor = find_min(node->right);
             node->data = successor->data;
             node->right = remove_rec(node->right, successor->data, removed);
         }

@@ -143,10 +143,6 @@ public:
     const T& operator[](std::size_t index) const noexcept {
         return data_[index];
     }
-
-    void clear() noexcept {
-        size_ = 0;
-    }
 };
 
 #endif // SIM_DYNARRAY_HPP

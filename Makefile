@@ -4,7 +4,7 @@ verify-sim:
 	cmake -S sim -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON
 	cmake --build build
 	ctest --test-dir build --output-on-failure
-	cppcheck --enable=warning,style,unusedFunction --error-exitcode=1 --inline-suppr sim/src
+	cppcheck --enable=warning,style,unusedFunction --std=c++20 --error-exitcode=1 --inline-suppr -I sim/src --suppress=missingIncludeSystem sim/src/*.hpp sim/tests/*.cpp
 
 verify-py:
 	python -m ruff check .

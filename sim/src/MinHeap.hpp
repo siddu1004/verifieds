@@ -24,16 +24,16 @@ private:
     }
 
     void heapify_down(std::size_t index) {
-        std::size_t size = heap_.size();
+        std::size_t n_elems = heap_.size();
         while (true) {
             std::size_t smallest = index;
             std::size_t left = 2 * index + 1;
             std::size_t right = 2 * index + 2;
 
-            if (left < size && heap_[left] < heap_[smallest]) {
+            if (left < n_elems && heap_[left] < heap_[smallest]) {
                 smallest = left;
             }
-            if (right < size && heap_[right] < heap_[smallest]) {
+            if (right < n_elems && heap_[right] < heap_[smallest]) {
                 smallest = right;
             }
 

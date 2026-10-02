@@ -28,7 +28,6 @@ Format per item: ID (P-01...), goal, acceptance tests, deps, why it fits docs/PR
 - Acceptance: Pipeline reports speedup matrix across 4 compiler/flag configurations; marks candidate robust only if k/m >= 75%.
 - Dependencies: S-06, S-08.
 - Fit with brief: Ensures candidate speedup is not an artifact of specific compiler auto-vectorization or optimization flags.
-- Literature citation: Cummins et al., CGO 2017 ("End-to-End Deep Learning of Optimization Heuristics"), URL: https://doi.org/10.1109/CGO.2017.7863738
 
 ## P-05 Peak memory footprint dimension
 - Goal: Track peak memory consumption (RSS/heap allocation) per candidate and generate a Pareto time-memory trade-off report.

@@ -5,6 +5,7 @@
 #include "BST.hpp"
 
 #include <algorithm>
+#undef NDEBUG
 #include <cassert>
 #include <iostream>
 #include <random>
@@ -130,7 +131,7 @@ void test_bst() {
     BST<int> tree;
     assert(tree.empty());
 
-    // Insert elements
+    // Insert elements to construct known tree structure
     tree.insert(50);
     tree.insert(30);
     tree.insert(70);
@@ -143,26 +144,46 @@ void test_bst() {
     assert(tree.search(40));
     assert(!tree.search(99));
 
-    // Traversals
+    // Test exact in-order traversal: [20, 30, 40, 50, 60, 70, 80]
     DynArray<int> in = tree.in_order();
     assert(in.size() == 7);
-    for (std::size_t i = 1; i < in.size(); ++i) {
-        assert(in[i - 1] <= in[i]);
+    int expected_in[] = {20, 30, 40, 50, 60, 70, 80};
+    for (std::size_t i = 0; i < in.size(); ++i) {
+        assert(in[i] == expected_in[i]);
+    }
+
+    // Test exact pre-order traversal: [50, 30, 20, 40, 70, 60, 80]
+    DynArray<int> pre = tree.pre_order();
+    assert(pre.size() == 7);
+    int expected_pre[] = {50, 30, 20, 40, 70, 60, 80};
+    for (std::size_t i = 0; i < pre.size(); ++i) {
+        assert(pre[i] == expected_pre[i]);
+    }
+
+    // Test exact post-order traversal: [20, 40, 30, 60, 80, 70, 50]
+    DynArray<int> post = tree.post_order();
+    assert(post.size() == 7);
+    int expected_post[] = {20, 40, 30, 60, 80, 70, 50};
+    for (std::size_t i = 0; i < post.size(); ++i) {
+        assert(post[i] == expected_post[i]);
     }
 
     // Delete node with 0 children (leaf 20)
-    assert(tree.remove(20));
+    bool rem0 = tree.remove(20);
+    assert(rem0);
     assert(!tree.search(20));
     assert(tree.size() == 6);
 
     // Delete node with 1 child (30 has child 40)
-    assert(tree.remove(30));
+    bool rem1 = tree.remove(30);
+    assert(rem1);
     assert(!tree.search(30));
     assert(tree.search(40));
     assert(tree.size() == 5);
 
     // Delete node with 2 children (root 50)
-    assert(tree.remove(50));
+    bool rem2 = tree.remove(50);
+    assert(rem2);
     assert(!tree.search(50));
     assert(tree.size() == 4);
     assert(tree.search(40));
