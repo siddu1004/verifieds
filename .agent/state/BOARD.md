@@ -15,7 +15,7 @@
 | N10 | RELEASE | N10 RELEASE | N9 | done | 0 | exit0 | success |
 | Q0 | Q0 | Q0 Oracle and catalogue | RELEASE | done | 0 | exit0 | success |
 | Q1 | Q1 | Q1 Simulator scenarios | Q0 | done | 0 | exit0 | success |
-| Q2 | Q2 | Q2 Pipeline scenarios | Q1 | pending | 0 | none | none |
+| Q2 | Q2 | Q2 Pipeline scenarios | Q1 | done | 0 | exit0 | success |
 | Q3 | Q3 | Q3 MCP scenario | Q1 | pending | 0 | none | none |
 | Q4 | Q4 | Q4 Workload-adequacy score | Q2 | pending | 0 | none | none |
 | Q5 | Q5 | Q5 Cross-platform goldens | Q4 | pending | 0 | none | none |

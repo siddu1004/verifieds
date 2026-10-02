@@ -264,12 +264,21 @@
       "id": "Q2",
       "title": "Q2 Pipeline scenarios",
       "deps": ["Q1"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch tests/test_scenarios_pipeline.py, verifieds/proposer/client.py. Write P-A..P-F and L-1..L-7 tests first.",
+      "reflection": {
+        "C1": "yes - test_pa_correct_rewrite, test_pb_tie_break_mutant, test_pc_quantum_off_by_one_mutant, test_pd_fixed_json_candidate, test_pe_late_crossover, test_pf_compile_and_loop_error, test_l1_prose_response, test_l2_markdown_fences, test_l3_5mb_body, test_l4_extra_keys, test_l5_empty_candidates, test_l6_slow_response, test_l7_connection_refused",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib http.server used for L-scenarios; complies with A2",
+        "C5": "yes - Windows socket handling verified",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q2",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "Q3",
