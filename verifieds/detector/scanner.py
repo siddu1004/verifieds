@@ -119,6 +119,69 @@ class SourceView:
                 )
         return tokens
 
+    def _find_statement_end(self, start_idx: int) -> int:
+        n = len(self.tokens)
+        if start_idx >= n:
+            return n - 1
+        tok = self.tokens[start_idx]
+        if tok.text == "{":
+            depth = 0
+            for j in range(start_idx, n):
+                if self.tokens[j].text == "{":
+                    depth += 1
+                elif self.tokens[j].text == "}":
+                    depth -= 1
+                    if depth == 0:
+                        return j
+            return n - 1
+        if tok.text in ("for", "while"):
+            h_depth = 0
+            h_end = -1
+            for j in range(start_idx + 1, n):
+                if self.tokens[j].text == "(":
+                    h_depth += 1
+                elif self.tokens[j].text == ")":
+                    h_depth -= 1
+                    if h_depth == 0:
+                        h_end = j
+                        break
+            if h_end != -1 and h_end + 1 < n:
+                return self._find_statement_end(h_end + 1)
+            return n - 1
+        if tok.text == "if":
+            h_depth = 0
+            h_end = -1
+            for j in range(start_idx + 1, n):
+                if self.tokens[j].text == "(":
+                    h_depth += 1
+                elif self.tokens[j].text == ")":
+                    h_depth -= 1
+                    if h_depth == 0:
+                        h_end = j
+                        break
+            if h_end != -1 and h_end + 1 < n:
+                then_end = self._find_statement_end(h_end + 1)
+                if then_end + 1 < n and self.tokens[then_end + 1].text == "else":
+                    return self._find_statement_end(then_end + 2)
+                return then_end
+            return n - 1
+
+        p_depth = 0
+        b_depth = 0
+        for j in range(start_idx, n):
+            t = self.tokens[j].text
+            if t in ("(", "["):
+                p_depth += 1
+            elif t in (")", "]"):
+                p_depth = max(0, p_depth - 1)
+            elif t == "{":
+                b_depth += 1
+            elif t == "}":
+                b_depth = max(0, b_depth - 1)
+            elif t == ";" and p_depth == 0 and b_depth == 0:
+                return j
+        return n - 1
+
     def _extract_loops(self) -> list[LoopBlock]:
         """Extract loop blocks with brace or single-statement body matching."""
         loops: list[LoopBlock] = []
@@ -156,37 +219,13 @@ class SourceView:
                     continue
 
                 start_line = tok.line
-                if self.tokens[body_start].text == "{":
-                    # Brace-enclosed body
-                    b_depth = 0
-                    body_end = -1
-                    for j in range(body_start, n):
-                        if self.tokens[j].text == "{":
-                            b_depth += 1
-                        elif self.tokens[j].text == "}":
-                            b_depth -= 1
-                            if b_depth == 0:
-                                body_end = j
-                                break
-                    if body_end == -1:
-                        end_line = self.tokens[-1].line
-                        body_tokens = self.tokens[body_start:]
-                    else:
-                        end_line = self.tokens[body_end].line
-                        body_tokens = self.tokens[body_start : body_end + 1]
-                else:
-                    # Single statement body up to ';'
-                    body_end = body_start
-                    while body_end < n and self.tokens[body_end].text != ";":
-                        body_end += 1
-                    if body_end < n:
-                        body_end += 1
-                    body_tokens = self.tokens[body_start:body_end]
-                    end_line = (
-                        body_tokens[-1].line
-                        if body_tokens
-                        else self.tokens[header_end].line
-                    )
+                body_end = self._find_statement_end(body_start)
+                body_tokens = self.tokens[body_start : body_end + 1]
+                end_line = (
+                    body_tokens[-1].line
+                    if body_tokens
+                    else self.tokens[header_end].line
+                )
 
                 body_text = " ".join(t.text for t in body_tokens)
                 loops.append(

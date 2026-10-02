@@ -63,10 +63,27 @@ def test_array_ready_queue_detection():
 
 def test_heap_ready_queue_clean():
     min_heap = ROOT / "sim" / "src" / "MinHeap.hpp"
-
-    # Inspect HeapReadyQueue and MinHeap specifically
     findings_heap = analyze_file(min_heap)
     assert len(findings_heap) == 0
+
+
+def test_sim_src_findings():
+    """Verify sim/src files findings match acceptance criteria exactly."""
+    clean_files = [
+        "MinHeap.hpp",
+        "Sort.hpp",
+        "DynArray.hpp",
+        "BST.hpp",
+        "CircularQueue.hpp",
+        "Scheduler.hpp",
+    ]
+    for fname in clean_files:
+        fpath = ROOT / "sim" / "src" / fname
+        if fpath.exists():
+            findings = analyze_file(fpath)
+            assert len(findings) == 0, (
+                f"Expected 0 findings for {fname}, got {len(findings)}"
+            )
 
 
 def test_scanner_edge_cases(tmp_path: Path):

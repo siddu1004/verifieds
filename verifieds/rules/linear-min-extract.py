@@ -7,9 +7,13 @@ from verifieds.detector.scanner import SourceView
 def match(source_view: SourceView) -> list[tuple[int, int, str]]:
     matches: list[tuple[int, int, str]] = []
 
-    # Pattern: X[i] < X[best] or X[best] > X[i]
-    comp_pattern1 = re.compile(r"(\w+)\s*\[\s*(\w+)\s*\]\s*<\s*\1\s*\[\s*(\w+)\s*\]")
-    comp_pattern2 = re.compile(r"(\w+)\s*\[\s*(\w+)\s*\]\s*>\s*\1\s*\[\s*(\w+)\s*\]")
+    # Pattern: X[i](.field) < X[best](.field) or X[best](.field) > X[i](.field)
+    comp_pattern1 = re.compile(
+        r"(\w+)\s*\[\s*(\w+)\s*\](?:\s*(?:\.|\->)\s*\w+)?\s*<\s*\1\s*\[\s*(\w+)\s*\](?:\s*(?:\.|\->)\s*\w+)?"
+    )
+    comp_pattern2 = re.compile(
+        r"(\w+)\s*\[\s*(\w+)\s*\](?:\s*(?:\.|\->)\s*\w+)?\s*>\s*\1\s*\[\s*(\w+)\s*\](?:\s*(?:\.|\->)\s*\w+)?"
+    )
 
     for loop in source_view.loops:
         header = loop.header_text
