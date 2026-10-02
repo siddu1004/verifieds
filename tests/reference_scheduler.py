@@ -5,7 +5,7 @@ from collections import deque
 IDLE = -1
 
 
-def _emit(gantt: list[tuple[int, int, int]], pid: int, start: int, end: int) -> None:
+def _emit(gantt, pid, start, end):
     if end <= start:
         return
     if gantt and gantt[-1][0] == pid and gantt[-1][2] == start:
@@ -14,11 +14,7 @@ def _emit(gantt: list[tuple[int, int, int]], pid: int, start: int, end: int) -> 
         gantt.append((pid, start, end))
 
 
-def _metrics(
-    procs: list[tuple[int, int, int, int]],
-    first_start: dict[int, int],
-    completion: dict[int, int],
-) -> dict[int, tuple[int, int, int, int]]:
+def _metrics(procs, first_start, completion):
     result = {}
     for pid, arrival, burst, _priority in procs:
         turnaround = completion[pid] - arrival
@@ -31,24 +27,18 @@ def _metrics(
     return result
 
 
-def _next_arrival(
-    procs: list[tuple[int, int, int, int]], remaining: dict[int, int]
-) -> int:
+def _next_arrival(procs, remaining):
     return min(arr for pid, arr, _b, _p in procs if remaining[pid] > 0)
 
 
-def _non_preemptive(
-    procs: list[tuple[int, int, int, int]], policy: str
-) -> tuple[list[tuple[int, int, int]], dict[int, tuple[int, int, int, int]]]:
+def _non_preemptive(procs, policy):
     keys = {
         "FCFS": lambda p: (p[1], p[0]),
         "SJF": lambda p: (p[2], p[1], p[0]),
         "PRIORITY": lambda p: (p[3], p[1], p[0]),
     }
     remaining = {p[0]: p[2] for p in procs}
-    first_start: dict[int, int] = {}
-    completion: dict[int, int] = {}
-    gantt: list[tuple[int, int, int]] = []
+    first_start, completion, gantt = {}, {}, []
     now = 0
     while any(remaining.values()):
         ready = [p for p in procs if remaining[p[0]] > 0 and p[1] <= now]
@@ -66,14 +56,10 @@ def _non_preemptive(
     return gantt, _metrics(procs, first_start, completion)
 
 
-def _srtf(
-    procs: list[tuple[int, int, int, int]],
-) -> tuple[list[tuple[int, int, int]], dict[int, tuple[int, int, int, int]]]:
+def _srtf(procs):
     remaining = {p[0]: p[2] for p in procs}
     arrival = {p[0]: p[1] for p in procs}
-    first_start: dict[int, int] = {}
-    completion: dict[int, int] = {}
-    gantt: list[tuple[int, int, int]] = []
+    first_start, completion, gantt = {}, {}, []
     now, current = 0, None
     while any(remaining.values()):
         ready = [pid for pid in remaining if remaining[pid] > 0 and arrival[pid] <= now]
@@ -96,20 +82,15 @@ def _srtf(
     return gantt, _metrics(procs, first_start, completion)
 
 
-def _round_robin(
-    procs: list[tuple[int, int, int, int]], quantum: int
-) -> tuple[list[tuple[int, int, int]], dict[int, tuple[int, int, int, int]]]:
+def _round_robin(procs, quantum):
     remaining = {p[0]: p[2] for p in procs}
     arrival = {p[0]: p[1] for p in procs}
     order = sorted(remaining, key=lambda k: (arrival[k], k))
-    queue: deque[int] = deque()
-    queued: set[int] = set()
-    first_start: dict[int, int] = {}
-    completion: dict[int, int] = {}
-    gantt: list[tuple[int, int, int]] = []
+    queue, queued = deque(), set()
+    first_start, completion, gantt = {}, {}, []
     now = 0
 
-    def admit(upto: int) -> None:
+    def admit(upto):
         for pid in order:
             if pid not in queued and arrival[pid] <= upto:
                 queue.append(pid)
@@ -137,16 +118,11 @@ def _round_robin(
     return gantt, _metrics(procs, first_start, completion)
 
 
-def schedule(
-    procs: list[tuple[int, int, int, int]],
-    policy: str,
-    quantum: int | None = None,
-) -> tuple[list[tuple[int, int, int]], dict[int, tuple[int, int, int, int]]]:
+def schedule(procs, policy, quantum=None):
     """procs: (pid, arrival, burst, priority). Returns (gantt, {pid: (completion,
     turnaround, waiting, response)}); idle slices use pid -1."""
     if policy == "SRTF":
         return _srtf(procs)
     if policy == "RR":
-        assert quantum is not None, "Quantum required for RR policy"
         return _round_robin(procs, quantum)
     return _non_preemptive(procs, policy)

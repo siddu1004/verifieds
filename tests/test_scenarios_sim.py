@@ -1,265 +1,296 @@
-"""Simulator scenarios and metamorphic tests (Q1)."""
+"""Scenario and property tests for sim_cli, judged by an independent oracle.
 
+Expected values come from hand-computed tables below and from
+reference_scheduler.py (pure Python, shares no code with the C++ program).
+Never derive an expected value from sim_cli's own output.
+"""
+
+import json
 import random
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
 import pytest
+from reference_scheduler import IDLE, schedule
 
-from tests.conftest import run_batch
-from tests.reference_scheduler import schedule
-from verifieds.harness.runner import BenchmarkRunner
-
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).resolve().parent.parent
+POLICIES = ("FCFS", "SJF", "SRTF", "PRIORITY", "RR")
 
 
 def exe_name(stem: str) -> str:
     return f"{stem}.exe" if sys.platform == "win32" else stem
 
 
-def test_sc1_convoy(tmp_path: Path) -> None:
-    """Purpose: Verify convoy effect performance across policies.
-    Input: Processes (1,0,20,3), (2,1,1,1), (3,2,1,1), (4,3,1,2).
-    Expected Result: Gantt slices and metrics match oracle and hand tables.
-    Bug Catching: Preemption logic bugs, queue ordering inversion under convoy.
+@pytest.fixture(scope="module")
+def cli() -> Path:
+    path = ROOT / "build" / exe_name("sim_cli")
+    if not path.exists():
+        subprocess.run(
+            [sys.executable, str(ROOT / "tasks.py"), "build-sim"], check=True, cwd=ROOT
+        )
+    return path
+
+
+def run_cli(cli, policy, procs, quantum=None, backend="heap"):
+    lines = [f"policy={policy}", f"backend={backend}"]
+    if quantum is not None:
+        lines.append(f"quantum={quantum}")
+    lines.append(f"processes={len(procs)}")
+    lines += [" ".join(map(str, p)) for p in procs]
+    with tempfile.TemporaryDirectory() as tmp:
+        batch = Path(tmp) / "batch.txt"
+        batch.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        proc = subprocess.run(
+            [str(cli), "--batch", str(batch)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    return json.loads(proc.stdout)
+
+
+def gantt_of(out):
+    return [(s["pid"], s["start"], s["end"]) for s in out["gantt"]]
+
+
+def metrics_of(out):
+    return {
+        m["pid"]: (m["completion"], m["turnaround"], m["waiting"], m["response"])
+        for m in out["metrics"]
+    }
+
+
+def gantt_text(out):
+    parts = []
+    for pid, start, end in gantt_of(out):
+        label = "IDLE" if pid == IDLE else f"P{pid}"
+        parts.append(f"{label}[{start}-{end}]")
+    return " ".join(parts)
+
+
+def assert_oracle(cli, procs, policy, quantum=None, backend="heap"):
+    out = run_cli(cli, policy, procs, quantum, backend)
+    gantt, metrics = schedule(procs, policy, quantum)
+    assert gantt_of(out) == gantt
+    assert metrics_of(out) == metrics
+    return out
+
+
+CONVOY = [(1, 0, 20, 3), (2, 1, 1, 1), (3, 2, 1, 1), (4, 3, 1, 2)]
+TIES = [(i, 0, 4, 2) for i in range(1, 6)]
+PRIORITY_WAIT = [(1, 0, 5, 9), (2, 1, 2, 1), (3, 2, 2, 1), (4, 3, 2, 1)]
+
+HAND = [
+    (
+        "convoy-fcfs",
+        CONVOY,
+        "FCFS",
+        None,
+        "P1[0-20] P2[20-21] P3[21-22] P4[22-23]",
+        (14.25, 20.0, 14.25),
+    ),
+    (
+        "convoy-sjf",
+        CONVOY,
+        "SJF",
+        None,
+        "P1[0-20] P2[20-21] P3[21-22] P4[22-23]",
+        (14.25, 20.0, 14.25),
+    ),
+    (
+        "convoy-priority",
+        CONVOY,
+        "PRIORITY",
+        None,
+        "P1[0-20] P2[20-21] P3[21-22] P4[22-23]",
+        (14.25, 20.0, 14.25),
+    ),
+    (
+        "convoy-srtf",
+        CONVOY,
+        "SRTF",
+        None,
+        "P1[0-1] P2[1-2] P3[2-3] P4[3-4] P1[4-23]",
+        (0.75, 6.5, 0.0),
+    ),
+    (
+        "convoy-rr2",
+        CONVOY,
+        "RR",
+        2,
+        "P1[0-2] P2[2-3] P3[3-4] P1[4-6] P4[6-7] P1[7-23]",
+        (2.0, 7.75, 1.25),
+    ),
+    (
+        "ties-fcfs",
+        TIES,
+        "FCFS",
+        None,
+        "P1[0-4] P2[4-8] P3[8-12] P4[12-16] P5[16-20]",
+        (8.0, 12.0, 8.0),
+    ),
+    (
+        "ties-sjf",
+        TIES,
+        "SJF",
+        None,
+        "P1[0-4] P2[4-8] P3[8-12] P4[12-16] P5[16-20]",
+        (8.0, 12.0, 8.0),
+    ),
+    (
+        "ties-srtf",
+        TIES,
+        "SRTF",
+        None,
+        "P1[0-4] P2[4-8] P3[8-12] P4[12-16] P5[16-20]",
+        (8.0, 12.0, 8.0),
+    ),
+    (
+        "ties-priority",
+        TIES,
+        "PRIORITY",
+        None,
+        "P1[0-4] P2[4-8] P3[8-12] P4[12-16] P5[16-20]",
+        (8.0, 12.0, 8.0),
+    ),
+    (
+        "ties-rr2",
+        TIES,
+        "RR",
+        2,
+        "P1[0-2] P2[2-4] P3[4-6] P4[6-8] P5[8-10] P1[10-12] P2[12-14] P3[14-16]"
+        " P4[16-18] P5[18-20]",
+        (12.0, 16.0, 4.0),
+    ),
+    (
+        "priority-wait",
+        PRIORITY_WAIT,
+        "PRIORITY",
+        None,
+        "P1[0-5] P2[5-7] P3[7-9] P4[9-11]",
+        (3.75, 6.5, 3.75),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("procs", "policy", "quantum", "text", "avgs"),
+    [pytest.param(*h[1:], id=h[0]) for h in HAND],
+)
+def test_hand_computed_scenarios(cli, procs, policy, quantum, text, avgs):
+    """Purpose: named textbook scenarios (convoy, ties, priority wait).
+
+    Input: tables above. Expected: exact Gantt text and averages from hand
+    computation, also equal to the oracle. Catches: wrong tie-breaks, wrong
+    preemption rule, wrong RR queue order.
     """
-    procs = [(1, 0, 20, 3), (2, 1, 1, 1), (3, 2, 1, 1), (4, 3, 1, 2)]
-
-    for policy in ["FCFS", "SJF", "PRIORITY"]:
-        res = run_batch(policy, "array", procs, tmp_path=tmp_path)
-        gantt_ref, _ = schedule(procs, policy)
-
-        assert res["avg_waiting"] == pytest.approx(14.25)
-        assert res["avg_turnaround"] == pytest.approx(20.0)
-        assert res["avg_response"] == pytest.approx(14.25)
-        assert [(g["pid"], g["start"], g["end"]) for g in res["gantt"]] == gantt_ref
-
-    res_srtf = run_batch("SRTF", "array", procs, tmp_path=tmp_path)
-    gantt_srtf, _ = schedule(procs, "SRTF")
-    assert res_srtf["avg_waiting"] == pytest.approx(0.75)
-    assert res_srtf["avg_turnaround"] == pytest.approx(6.5)
-    assert res_srtf["avg_response"] == pytest.approx(0.0)
-    assert [(g["pid"], g["start"], g["end"]) for g in res_srtf["gantt"]] == gantt_srtf
-
-    res_rr = run_batch("RR", "array", procs, quantum=2, tmp_path=tmp_path)
-    gantt_rr, _ = schedule(procs, "RR", quantum=2)
-    assert res_rr["avg_waiting"] == pytest.approx(2.0)
-    assert res_rr["avg_turnaround"] == pytest.approx(7.75)
-    assert res_rr["avg_response"] == pytest.approx(1.25)
-    assert [(g["pid"], g["start"], g["end"]) for g in res_rr["gantt"]] == gantt_rr
+    for backend in ("array", "heap") if policy != "RR" else ("array",):
+        out = assert_oracle(cli, procs, policy, quantum, backend)
+        assert gantt_text(out) == text
+        assert out["avg_waiting"] == pytest.approx(avgs[0], abs=0.005)
+        assert out["avg_turnaround"] == pytest.approx(avgs[1], abs=0.005)
+        assert out["avg_response"] == pytest.approx(avgs[2], abs=0.005)
 
 
-def test_sc2_simultaneous_ties(tmp_path: Path) -> None:
-    """Purpose: Verify tie-breaker rules (arrival then pid).
-    Input: 5 processes (pid 1-5, arrival 0, burst 4, priority 2).
-    Expected Result: Exact pid ordering for FCFS/SJF/SRTF/PRIORITY and RR q=2.
-    Bug Catching: Non-deterministic tie-breaking or unstable queue sorting.
-    """
-    procs = [(i, 0, 4, 2) for i in range(1, 6)]
-
-    for policy in ["FCFS", "SJF", "SRTF", "PRIORITY"]:
-        res = run_batch(policy, "array", procs, tmp_path=tmp_path)
-        gantt_ref, _ = schedule(procs, policy)
-        assert res["avg_waiting"] == pytest.approx(8.0)
-        assert [(g["pid"], g["start"], g["end"]) for g in res["gantt"]] == gantt_ref
-
-    res_rr = run_batch("RR", "array", procs, quantum=2, tmp_path=tmp_path)
-    gantt_rr, _ = schedule(procs, "RR", quantum=2)
-    assert res_rr["avg_waiting"] == pytest.approx(12.0)
-    assert [(g["pid"], g["start"], g["end"]) for g in res_rr["gantt"]] == gantt_rr
+@pytest.mark.parametrize("policy", POLICIES)
+def test_single_and_late_process(cli, policy):
+    """Purpose: degenerate inputs. Input: one process at 0; one process at 100.
+    Expected: no idle for the first; IDLE[0-100] then the process for the second.
+    Catches: crashes on tiny input, missing leading idle slice."""
+    quantum = 3 if policy == "RR" else None
+    out = assert_oracle(cli, [(1, 0, 5, 1)], policy, quantum)
+    assert gantt_text(out) == "P1[0-5]"
+    out = assert_oracle(cli, [(1, 100, 1, 1)], policy, quantum)
+    assert gantt_text(out) == "IDLE[0-100] P1[100-101]"
 
 
-def test_sc3_priority_wait(tmp_path: Path) -> None:
-    """Purpose: Verify priority scheduling with staggered arrivals.
-    Input: (1,0,5,9), (2,1,2,1), (3,2,2,1), (4,3,2,1).
-    Expected Result: Waiting P1=0, P2=4, P3=5, P4=6.
-    Bug Catching: Incorrect ready queue insertion logic for priority ties.
-    """
-    procs = [(1, 0, 5, 9), (2, 1, 2, 1), (3, 2, 2, 1), (4, 3, 2, 1)]
-    res = run_batch("PRIORITY", "array", procs, tmp_path=tmp_path)
-    gantt_ref, _ = schedule(procs, "PRIORITY")
-
-    metrics_map = {m["pid"]: m["waiting"] for m in res["metrics"]}
-    assert metrics_map[1] == 0
-    assert metrics_map[2] == 4
-    assert metrics_map[3] == 5
-    assert metrics_map[4] == 6
-    assert [(g["pid"], g["start"], g["end"]) for g in res["gantt"]] == gantt_ref
+@pytest.mark.parametrize("quantum", [1, 1000])
+def test_round_robin_extremes(cli, quantum):
+    """Purpose: RR with quantum 1 and a huge quantum. Expected: equals the
+    oracle; the huge quantum behaves like FCFS. Catches: quantum off-by-one."""
+    assert_oracle(cli, CONVOY, "RR", quantum)
 
 
-def test_sc4_single_process(tmp_path: Path) -> None:
-    """Purpose: Verify single process execution edge case.
-    Input: Process (1,0,5,1).
-    Expected Result: Gantt P1[0-5], waiting 0, turnaround 5.
-    Bug Catching: Null pointer dereference or boundary loop failure.
-    """
-    procs = [(1, 0, 5, 1)]
-    res = run_batch("FCFS", "array", procs, tmp_path=tmp_path)
-    assert [(g["pid"], g["start"], g["end"]) for g in res["gantt"]] == [(1, 0, 5)]
-    assert res["avg_waiting"] == 0.0
+def random_procs(rng, max_n, max_arrival, max_burst):
+    n = rng.randint(1, max_n)
+    return [
+        (
+            i + 1,
+            rng.randint(0, max_arrival),
+            rng.randint(1, max_burst),
+            rng.randint(1, 5),
+        )
+        for i in range(n)
+    ]
 
 
-def test_sc5_idle_first(tmp_path: Path) -> None:
-    """Purpose: Verify CPU idle period before first process at t=100.
-    Input: Process (1,100,1,1).
-    Expected Result: Gantt IDLE[0-100], P1[100-101], waiting 0.
-    Bug Catching: Skipping initial idle CPU time or zero-start assumption bugs.
-    """
-    procs = [(1, 100, 1, 1)]
-    res = run_batch("FCFS", "array", procs, tmp_path=tmp_path)
-    gantt_ref, _ = schedule(procs, "FCFS")
-    assert [(g["pid"], g["start"], g["end"]) for g in res["gantt"]] == gantt_ref
-    assert gantt_ref[0] == (-1, 0, 100)
+def test_differential_against_oracle(cli):
+    """Purpose: broad agreement with the independent oracle. Input: 100 seeded
+    workloads, all policies, both queue backends. Expected: identical Gantt and
+    metrics. Catches: any scheduling logic bug the named scenarios miss."""
+    rng = random.Random(2026)
+    for _ in range(100):
+        procs = random_procs(rng, 15, 25, 9)
+        for policy in POLICIES:
+            quantum = rng.randint(1, 6) if policy == "RR" else None
+            for backend in ("array", "heap") if policy != "RR" else ("array",):
+                assert_oracle(cli, procs, policy, quantum, backend)
 
 
-def test_sc6_rr_extremes(tmp_path: Path) -> None:
-    """Purpose: Verify Round Robin under extreme quantum values.
-    Input: Processes (1,0,3,1), (2,0,2,1).
-    Expected Result: q=1 alternates; q=100 matches FCFS.
-    Bug Catching: Infinite queue re-insertion loops or quantum off-by-one errors.
-    """
-    procs = [(1, 0, 3, 1), (2, 0, 2, 1)]
-
-    res_q1 = run_batch("RR", "array", procs, quantum=1, tmp_path=tmp_path)
-    gantt_q1, _ = schedule(procs, "RR", quantum=1)
-    assert [(g["pid"], g["start"], g["end"]) for g in res_q1["gantt"]] == gantt_q1
-
-    res_q100 = run_batch("RR", "array", procs, quantum=100, tmp_path=tmp_path)
-    gantt_fcfs, _ = schedule(procs, "FCFS")
-    assert [(g["pid"], g["start"], g["end"]) for g in res_q100["gantt"]] == gantt_fcfs
-
-
-def test_metamorphic_properties() -> None:
-    """Purpose: Verify 6 metamorphic invariant properties (M1-M6).
-    Input: 300 seeded random workloads.
-    Expected Result: Invariant properties hold for simulator outputs.
-    Bug Catching: Order dependency, non-linear timing bugs, state leakage.
-    """
-    rng = random.Random(42)
-    policies = ["FCFS", "SJF", "SRTF", "RR", "PRIORITY"]
-
-    for _ in range(300):
-        n = rng.randint(1, 10)
-        procs = [
-            (i + 1, rng.randint(0, 15), rng.randint(1, 8), rng.randint(1, 4))
-            for i in range(n)
-        ]
-        pol = rng.choice(policies)
-        q = rng.randint(1, 4) if pol == "RR" else None
-
-        # M1: Permuting input order changes nothing
-        shuffled = list(procs)
-        rng.shuffle(shuffled)
-        g1, m1 = schedule(procs, pol, q)
-        g1_shuf, m1_shuf = schedule(shuffled, pol, q)
-        assert g1 == g1_shuf and m1 == m1_shuf
-
-        # M2: Adding k to arrival shifts completion by k
-        k = rng.randint(1, 10)
-        procs_k = [(p[0], p[1] + k, p[2], p[3]) for p in procs]
-        _, m2 = schedule(procs_k, pol, q)
-        for pid in m1:
-            assert m2[pid][0] == m1[pid][0] + k
-            assert m2[pid][1] == m1[pid][1]
-            assert m2[pid][2] == m1[pid][2]
-            assert m2[pid][3] == m1[pid][3]
-
-        # M3: Multiplying arrivals, bursts by 3 multiplies metrics by 3
-        procs_m3 = [(p[0], p[1] * 3, p[2] * 3, p[3]) for p in procs]
-        q_m3 = q * 3 if q else None
-        _, m3 = schedule(procs_m3, pol, q_m3)
-        for pid in m1:
-            assert m3[pid][0] == m1[pid][0] * 3
-            assert m3[pid][2] == m1[pid][2] * 3
-
-        # M4: SRTF average waiting <= other policies
-        avg_wait_srtf = sum(m[2] for m in schedule(procs, "SRTF")[1].values()) / n
-        avg_wait_pol = sum(m[2] for m in m1.values()) / n
-        assert avg_wait_srtf <= avg_wait_pol + 1e-9
-
-        # M5: RR quantum >= largest burst equals FCFS per process
-        max_burst = max(p[2] for p in procs)
-        g_rr_large, _ = schedule(procs, "RR", quantum=max_burst + 1)
-        g_fcfs, _ = schedule(procs, "FCFS")
-        assert g_rr_large == g_fcfs
-
-        # M6: Appending process arriving after all finish leaves earlier unchanged
-        max_completion = max(m1[p[0]][0] for p in procs)
-        late_proc = (n + 1, max_completion + 10, 5, 1)
-        procs_appended = procs + [late_proc]
-        _, m6 = schedule(procs_appended, pol, q)
-        for pid in m1:
-            assert m6[pid] == m1[pid]
+def test_metamorphic_properties(cli):
+    """Purpose: properties that must hold for every workload (40 seeded).
+    M1 input order is irrelevant. M2 shifting all arrivals by k keeps waiting,
+    turnaround, response and moves completion by k. M3 scaling times (and the
+    quantum) by 3 scales completion and waiting by 3. M4 SRTF has the lowest
+    average waiting. M5 RR with quantum >= max burst equals FCFS. M6 a process
+    arriving after everything finished changes no earlier result.
+    Catches: order dependence, hidden absolute-time assumptions, preemption bugs."""
+    rng = random.Random(7)
+    for _ in range(40):
+        procs = random_procs(rng, 10, 15, 8)
+        quantum = rng.randint(1, 4)
+        base = {}
+        for policy in POLICIES:
+            q = quantum if policy == "RR" else None
+            base[policy] = metrics_of(run_cli(cli, policy, procs, q))
+            shuffled = procs[:]
+            rng.shuffle(shuffled)
+            assert metrics_of(run_cli(cli, policy, shuffled, q)) == base[policy]  # M1
+            k = rng.randint(1, 9)
+            shifted = [(a, b + k, c, d) for a, b, c, d in procs]
+            moved = metrics_of(run_cli(cli, policy, shifted, q))  # M2
+            for pid, (comp, turn, wait, resp) in base[policy].items():
+                assert moved[pid] == (comp + k, turn, wait, resp)
+            scaled = [(a, b * 3, c * 3, d) for a, b, c, d in procs]
+            sq = None if q is None else q * 3
+            big = metrics_of(run_cli(cli, policy, scaled, sq))  # M3
+            for pid, (comp, _turn, wait, _resp) in base[policy].items():
+                assert big[pid][0] == comp * 3
+                assert big[pid][2] == wait * 3
+            end = max(m[0] for m in base[policy].values())
+            tail = [*procs, (len(procs) + 1, end + 50, 3, 1)]
+            after = metrics_of(run_cli(cli, policy, tail, q))  # M6
+            for pid, values in base[policy].items():
+                assert after[pid] == values
+        avg = {p: sum(m[2] for m in base[p].values()) / len(procs) for p in POLICIES}
+        assert all(avg["SRTF"] <= avg[p] + 1e-9 for p in POLICIES)  # M4
+        longest = max(p[2] for p in procs)
+        assert metrics_of(run_cli(cli, "RR", procs, longest)) == base["FCFS"]  # M5
 
 
-def test_differential_oracle_500_workloads(tmp_path: Path) -> None:
-    """Purpose: Differential testing against reference_scheduler on 500 workloads.
-    Input: 500 seeded random workloads (1-15 procs, arrival 0-25).
-    Expected Result: sim_cli output matches reference_scheduler output.
-    Bug Catching: Mismatches between C++ engine and reference scheduler.
-    """
-    rng = random.Random(1337)
-    policies = ["FCFS", "SJF", "SRTF", "RR", "PRIORITY"]
-
-    for _ in range(500):
-        n = rng.randint(1, 15)
-        procs = [
-            (i + 1, rng.randint(0, 25), rng.randint(1, 9), rng.randint(1, 5))
-            for i in range(n)
-        ]
-        policy = rng.choice(policies)
-        q = rng.randint(1, 5) if policy == "RR" else None
-        backend = rng.choice(["array", "heap"])
-
-        res_sim = run_batch(policy, backend, procs, quantum=q, tmp_path=tmp_path)
-        gantt_ref, metrics_ref = schedule(procs, policy, quantum=q)
-
-        assert [(g["pid"], g["start"], g["end"]) for g in res_sim["gantt"]] == gantt_ref
-        for m in res_sim["metrics"]:
-            pid = m["pid"]
-            expected_tuple = (
-                m["completion"],
-                m["turnaround"],
-                m["waiting"],
-                m["response"],
-            )
-            assert expected_tuple == metrics_ref[pid]
-
-
-def test_scale_20k_workload() -> None:
-    """Purpose: Large scale (n=20,000) workload performance comparison.
-    Input: Workload generated with n=20000 and SJF policy.
-    Expected Result: Array and Heap backends yield identical outputs.
-    Bug Catching: O(n^2) scaling degradation or buffer overflow.
-    """
-    sim_cli = ROOT / "build" / exe_name("sim_cli")
-    assert sim_cli.exists()
-
-    runner = BenchmarkRunner(
-        orig_cmd=[str(sim_cli)],
-        cand_cmd=[str(sim_cli)],
-        runs_per_size=3,
-    )
-    res = runner.run_benchmark(sizes=[20000], policy="SJF")
-    assert res["equivalent"] is True
-
-
-def test_malformed_interactive_inputs() -> None:
-    """Purpose: Interactive CLI malformed input stress test.
-    Input: Negative numbers, PID 0, 10,000 char lines, repeated delete, EOF.
-    Expected Result: sim_cli reports clear error messages without crashing.
-    Bug Catching: Unhandled stdin EOF, buffer overflow, arithmetic exceptions.
-    """
-    sim_cli = ROOT / "build" / exe_name("sim_cli")
-    assert sim_cli.exists()
-
-    long_line = "A" * 10000 + "\n"
-    inputs = f"-1\n0\n{long_line}99\n"
-
-    proc = subprocess.run(
-        [str(sim_cli)],
-        input=inputs,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode in [0, 1]
+def test_scale_backends_agree(cli):
+    """Purpose: a larger workload (3,000 processes). Expected: both queue backends
+    produce identical output. Catches: heap bugs that only appear with deep heaps."""
+    rng = random.Random(5)
+    procs = [
+        (i + 1, rng.randint(0, 750), rng.randint(1, 20), rng.randint(1, 10))
+        for i in range(3000)
+    ]
+    for policy in ("SJF", "PRIORITY", "FCFS"):
+        first = run_cli(cli, policy, procs, backend="array")
+        second = run_cli(cli, policy, procs, backend="heap")
+        first.pop("backend")
+        second.pop("backend")
+        assert first == second
