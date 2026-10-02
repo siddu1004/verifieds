@@ -11,5 +11,5 @@
 | N6 | S-09 | N6 S-09 MCP server | N5 | done | 0 | exit0 | success |
 | N7 | S-10 | N7 S-10 safety | N6 | done | 0 | exit0 | success |
 | N8 | S-11 | N8 S-11 study | N5 | done | 0 | exit0 | success |
-| N9 | S-12 | N9 S-12 docs | N7, N8 | pending | 0 | none | none |
+| N9 | S-12 | N9 S-12 docs | N7, N8 | done | 0 | exit0 | success |
 | N10 | RELEASE | N10 RELEASE | N9 | pending | 0 | none | none |

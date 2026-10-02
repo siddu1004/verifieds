@@ -1,66 +1,49 @@
 # VerifiedDS
 
-> Detects suboptimal data-structure choices in C++ code, proposes better ones via a local
-> LLM (Ollama), and accepts a change **only** if it is proven equivalent and measurably faster.
+VerifiedDS detects data-structure and algorithm bottlenecks in C++ code, proposes optimizations using a local LLM (Ollama), and accepts changes only if proven equivalent and measurably faster.
 
-## Build status
+## Quick Start
 
-| Gate | Status |
-|---|---|
-| Python (ruff · mypy · vulture · pytest 90 %) | ✅ green |
-| C++ (cmake · g++ · cppcheck · CTest) | ⚠️ CI only — install cmake/g++/cppcheck locally first |
-| CI (GitHub Actions — ubuntu-latest) | defined in `.github/workflows/verify.yml` |
-
-## Task progress
-
-| Task | Description | Status |
-|---|---|---|
-| **S-00** | Scaffold (CMake, pyproject, CI) | 🔍 review |
-| S-01 | Core C++ structures | 🟡 ready |
-| S-02 | Scheduler engine | ⬜ todo |
-| S-03 | CLI | ⬜ todo |
-| **S-04** | Pydantic schemas | 🔍 review |
-| S-05 | Detector (tree-sitter) | ⬜ todo |
-| S-06 | Harness (timing + equivalence) | ⬜ todo |
-| **S-07** | Proposer (Ollama client) | 🔍 review |
-| S-08 | Pipeline (end-to-end) | ⬜ todo |
-| S-09 | MCP server | ⬜ todo |
-| S-10 | Safety tests | ⬜ todo |
-| S-11 | Study script | ⬜ todo |
-| S-12 | README + report | ⬜ todo |
-
-## Setup
-
-### Prerequisites
-- Python ≥ 3.11
-- g++ with C++20 support
-- CMake ≥ 3.20
-- cppcheck
-- [Ollama](https://ollama.com) with a coder model pulled (e.g. `ollama pull qwen2.5-coder`)
-
-### Install
-```bash
-pip install -e ".[dev]"
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+python tasks.py verify
 ```
 
-### Verify
-```bash
-make tools-check   # check all tool versions (non-fatal for missing C++ tools)
-make verify-py     # Python lint + type check + tests
-make verify-sim    # C++ build + sanitizers + ctest
-make verify        # both
+## Running the Simulator
+
+```powershell
+python tasks.py sim
 ```
 
-## Windows
-The Makefile uses Unix shell commands. Use **WSL2** (recommended) or **MSYS2**, and
-run `make tools-check` first. Python tools work natively via `python -m <tool>`.
+## Running Python Suite
 
-## Parallel (orchestrated) mode
-Use the Orchestrator kickoff in `PROMPTS.md`. Agents coordinate through `.agent/state/`
-and git worktrees. Humans approve at milestone gates M1–M5; agents never merge to main.
+```powershell
+python tasks.py py
+```
 
-## Limits
-The gates catch dead and untested code but cannot guarantee correctness. Equivalence
-is checked by testing, not proof. The detector covers four rules in this version.
-Resource limits in the harness are not a full sandbox.
+## Running Study Sweep
 
+```powershell
+python scripts/run_study.py --dry-run
+```
+
+## MCP Server Registration
+
+To register the MCP server with Claude Desktop or Antigravity IDE:
+
+```json
+{
+  "mcpServers": {
+    "verifieds": {
+      "command": "python",
+      "args": ["-m", "verifieds.mcp.server"]
+    }
+  }
+}
+```
+
+## Resource Limits & Safety Disclaimer
+
+> [!WARNING]
+> Resource limits on Windows (such as memory caps) raise `NotImplementedError` per decision D-4. The harness enforces process timeout limits but does not provide a full OS sandbox.

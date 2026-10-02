@@ -184,12 +184,21 @@
       "id": "S-12",
       "title": "N9 S-12 docs",
       "deps": ["S-10", "S-11"],
-      "state": "pending",
+      "state": "done",
       "iter": 0,
-      "plan": "",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "plan": "Touch README.md, docs/REPORT_OUTLINE.md, tests/test_readme.py. Write test_readme.py first.",
+      "reflection": {
+        "C1": "yes - test_readme_contents, test_report_outline_contents",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - standard library + pydantic",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-12",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "RELEASE",
