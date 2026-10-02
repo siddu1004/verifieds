@@ -3,7 +3,7 @@
 | Node | Task ID | Title | Deps | State | Iter | Evidence | CI |
 |---|---|---|---|---|---|---|---|
 | N0 | R-05 | N0 BOOT | none | done | 0 | exit0 | success |
-| N1 | S-02 | N1 S-02 scheduler engine | N0 | pending | 0 | none | none |
+| N1 | S-02 | N1 S-02 scheduler engine | N0 | done | 0 | exit0 | success |
 | N2 | S-03 | N2 S-03 CLI | N1 | pending | 0 | none | none |
 | N3 | S-05 | N3 S-05 detector | N1 | pending | 0 | none | none |
 | N4 | S-06 | N4 S-06 harness | N1, N2 | pending | 0 | none | none |
