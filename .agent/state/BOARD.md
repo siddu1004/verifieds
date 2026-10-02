@@ -12,4 +12,11 @@
 | N7 | S-10 | N7 S-10 safety | N6 | done | 0 | exit0 | success |
 | N8 | S-11 | N8 S-11 study | N5 | done | 0 | exit0 | success |
 | N9 | S-12 | N9 S-12 docs | N7, N8 | done | 0 | exit0 | success |
-| N10 | RELEASE | N10 RELEASE | N9 | pending | 0 | none | none |
+| N10 | RELEASE | N10 RELEASE | N9 | done | 0 | exit0 | success |
+| Q0 | Q0 | Q0 Oracle and catalogue | RELEASE | done | 0 | exit0 | success |
+| Q1 | Q1 | Q1 Simulator scenarios | Q0 | pending | 0 | none | none |
+| Q2 | Q2 | Q2 Pipeline scenarios | Q1 | pending | 0 | none | none |
+| Q3 | Q3 | Q3 MCP scenario | Q1 | pending | 0 | none | none |
+| Q4 | Q4 | Q4 Workload-adequacy score | Q2 | pending | 0 | none | none |
+| Q5 | Q5 | Q5 Cross-platform goldens | Q4 | pending | 0 | none | none |
+| Q6 | Q6 | Q6 Demo and claims audit | Q3, Q5 | pending | 0 | none | none |

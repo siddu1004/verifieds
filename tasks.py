@@ -130,7 +130,13 @@ def sim():
 
 
 def check_imports():
-    allowed = set(sys.stdlib_module_names) | THIRD_PARTY | {"conftest"}
+    # Allowed imports for core modules, stdlib, third-party deps,
+    # and Q0 test reference scheduler
+    allowed = (
+        set(sys.stdlib_module_names)
+        | THIRD_PARTY
+        | {"conftest", "reference_scheduler", "tests"}
+    )
     bad = []
     for folder in ("verifieds", "tests"):
         for path in sorted((ROOT / folder).rglob("*.py")):
