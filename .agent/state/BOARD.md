@@ -2,7 +2,7 @@
 
 | Node | Task ID | Title | Deps | State | Iter | Evidence | CI |
 |---|---|---|---|---|---|---|---|
-| N0 | R-05 | N0 BOOT | none | active | 0 | pending | pending |
+| N0 | R-05 | N0 BOOT | none | done | 0 | exit0 | success |
 | N1 | S-02 | N1 S-02 scheduler engine | N0 | pending | 0 | none | none |
 | N2 | S-03 | N2 S-03 CLI | N1 | pending | 0 | none | none |
 | N3 | S-05 | N3 S-05 detector | N1 | pending | 0 | none | none |

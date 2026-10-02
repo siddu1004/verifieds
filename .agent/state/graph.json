@@ -4,12 +4,21 @@
       "id": "R-05",
       "title": "N0 BOOT",
       "deps": [],
-      "state": "active",
+      "state": "done",
       "iter": 0,
       "plan": "Boot environment, tasks.py, config, and preflight",
-      "reflection": {},
-      "evidence": "",
-      "ci": ""
+      "reflection": {
+        "C1": "yes - test_smoke.cpp, test_structures.cpp, test_proposer.py, test_schemas.py, test_smoke.py",
+        "C2": "yes - searched diff for unused symbols, TODO, commented-out code: none found",
+        "C3": "yes - only planned files modified according to git status",
+        "C4": "yes - dependencies pinned in pyproject.toml and verified via DEPS.md",
+        "C5": "yes - Windows paths handled via pathlib and tasks.py supports win32",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task R-05",
+        "C7": "yes - no checks or thresholds weakened",
+        "C8": "yes - hand-written data structures in sim/src comply with A7"
+      },
+      "evidence": "exit0",
+      "ci": "success"
     },
     {
       "id": "S-02",
