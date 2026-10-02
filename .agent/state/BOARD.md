@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|---|
 | N0 | R-05 | N0 BOOT | none | done | 0 | exit0 | success |
 | N1 | S-02 | N1 S-02 scheduler engine | N0 | done | 0 | exit0 | success |
-| N2 | S-03 | N2 S-03 CLI | N1 | pending | 0 | none | none |
+| N2 | S-03 | N2 S-03 CLI | N1 | done | 0 | exit0 | success |
 | N3 | S-05 | N3 S-05 detector | N1 | pending | 0 | none | none |
 | N4 | S-06 | N4 S-06 harness | N1, N2 | pending | 0 | none | none |
 | N5 | S-08 | N5 S-08 pipeline | N3, N4 | pending | 0 | none | none |
