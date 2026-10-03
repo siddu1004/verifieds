@@ -1,5 +1,6 @@
 """MCP server implementation using official Python MCP SDK (FastMCP)."""
 
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -12,20 +13,29 @@ from verifieds.schemas.models import Candidate, VerifyReport
 ROOT = Path(__file__).resolve().parent.parent.parent
 
 
+def get_workspace_root() -> Path:
+    """Read VERIFIEDS_WORKSPACE from env, defaulting to repo root."""
+    env_ws = os.environ.get("VERIFIEDS_WORKSPACE")
+    if env_ws:
+        return Path(env_ws).resolve()
+    return ROOT.resolve()
+
+
 def exe_name(stem: str) -> str:
     return f"{stem}.exe" if sys.platform == "win32" else stem
 
 
-def validate_workspace_path(file_path: str) -> Path:
+def validate_workspace_path(file_path: str, workspace_root: Path | None = None) -> Path:
     """Validate that file_path resolves within the workspace root."""
+    ws = (workspace_root or get_workspace_root()).resolve()
     p = Path(file_path)
-    resolved = (ROOT / p).resolve() if not p.is_absolute() else p.resolve()
+    resolved = (ws / p).resolve() if not p.is_absolute() else p.resolve()
 
     try:
-        resolved.relative_to(ROOT)
+        resolved.relative_to(ws)
     except ValueError as err:
         raise ValueError(
-            f"Path escape attempt blocked: {file_path} is outside workspace {ROOT}"
+            f"Path escape attempt blocked: {file_path} is outside workspace {ws}"
         ) from err
 
     if not resolved.exists():
@@ -86,23 +96,31 @@ def create_mcp_server(
         description="Run benchmark harness to verify output equivalence.",
     )
     def verify_candidate(
-        file_path: str, diff: str, candidate_id: str
+        project_dir: str,
+        main_file: str,
+        diff: str,
+        candidate_id: str,
+        workload_cmd: str | None = None,
     ) -> dict[str, Any]:
-        validate_workspace_path(file_path)
+        ws = get_workspace_root()
+        proj_path = validate_workspace_path(project_dir, ws)
+        _ = validate_workspace_path(str(Path(project_dir) / main_file), ws)
+
         import tempfile
         from verifieds.wiring import build_verify_diff
 
-        with tempfile.TemporaryDirectory(dir=ROOT) as tmpdir:
+        with tempfile.TemporaryDirectory(dir=ws) as tmpdir:
             verify_fn = build_verify_diff(
                 workspace=Path(tmpdir),
-                sizes=[200, 2000, 8000],
+                sizes=(200, 2000, 8000),
                 runs=3,
             )
             report = verify_fn(
-                ROOT / "sim",
-                "src/main.cpp",
+                proj_path,
+                main_file,
                 diff,
                 candidate_id,
+                workload_cmd=workload_cmd,
             )
             return report.model_dump()
 
@@ -149,3 +167,6 @@ def create_mcp_server(
 
 
 mcp_server = create_mcp_server()
+
+if __name__ == "__main__":
+    mcp_server.run(transport="stdio")

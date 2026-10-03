@@ -98,7 +98,7 @@ def test_harness_synthetic_on_vs_on2(tmp_path: Path):
         "import sys, time\n"
         "with open(sys.argv[2]) as f: text = f.read()\n"
         "procs = len(text.splitlines()) - 3\n"
-        "time.sleep((procs ** 2) * 0.0001)\n"
+        "time.sleep((procs ** 2) * 0.0002)\n"
         'print(\'{"policy": "FCFS", "gantt": [], "metrics": {}}\')\n',
         encoding="utf-8",
     )

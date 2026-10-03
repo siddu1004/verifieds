@@ -4,9 +4,13 @@ The table below maps every claim in `README.md` and `docs/REPORT_OUTLINE.md` to 
 
 | Source | Claim Text | Test Function |
 |---|---|---|
-| README.md | VerifiedDS detects data-structure and algorithm bottlenecks in C++ code | `tests/test_detector.py::test_rule_fixtures` |
-| README.md | proposes optimizations using a local LLM (Ollama) | `tests/test_proposer.py::test_proposer_valid_response` |
-| README.md | accepts changes only if proven equivalent and measurably faster | `tests/test_pipeline.py::test_pipeline_accepted_rewrite` |
+| README.md | VerifiedDS detects data-structure and algorithm bottlenecks in C++ projects | `tests/test_detector.py::test_rule_fixtures` |
+| README.md | Proposes candidate optimizations using local Ollama LLM | `tests/test_proposer.py::test_proposer_valid_response` |
+| README.md | accepts changes only if verified equivalent and measurably faster | `tests/test_pipeline.py::test_pipeline_accepted_rewrite` |
+| README.md | System diagnostics tool (PY -m verifieds.doctor) | `tests/test_doctor.py::test_doctor_all_pass` |
+| README.md | MCP server stdio interface (python -m verifieds.mcp) | `tests/test_mcp.py::test_mcp_stdio_subprocess` |
+| README.md | Verification of generic C++ project with custom workload_cmd | `tests/test_mcp.py::test_generic_cpp_project_verification` |
+| README.md | Workspace root environment override (VERIFIEDS_WORKSPACE) | `tests/test_mcp.py::test_workspace_root_override` |
 | README.md | Resource limits on Windows (such as memory caps) raise NotImplementedError per decision D-4 | `tests/test_harness.py::test_set_memory_limit_windows` |
 | README.md | The harness enforces process timeout limits but does not provide a full OS sandbox | `tests/test_harness.py::test_harness_runaway_timeout` |
 | docs/REPORT_OUTLINE.md | Core simulator structures (DynArray, BST, MinHeap, ReadyQueue) | `tests/test_scenarios_sim.py::test_hand_computed_scenarios` |

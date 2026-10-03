@@ -5,56 +5,56 @@
     {
       "pid": 1,
       "start": 0,
-      "end": 10
+      "end": 8
     },
     {
       "pid": 2,
-      "start": 10,
-      "end": 14
+      "start": 8,
+      "end": 12
     },
     {
       "pid": 3,
-      "start": 14,
-      "end": 16
+      "start": 12,
+      "end": 21
     },
     {
       "pid": 4,
-      "start": 16,
-      "end": 17
+      "start": 21,
+      "end": 26
     }
   ],
   "metrics": [
     {
       "pid": 1,
-      "completion": 10,
-      "turnaround": 10,
+      "completion": 8,
+      "turnaround": 8,
       "waiting": 0,
       "response": 0
     },
     {
       "pid": 2,
-      "completion": 14,
-      "turnaround": 13,
-      "waiting": 9,
-      "response": 9
+      "completion": 12,
+      "turnaround": 11,
+      "waiting": 7,
+      "response": 7
     },
     {
       "pid": 3,
-      "completion": 16,
-      "turnaround": 14,
-      "waiting": 12,
-      "response": 12
+      "completion": 21,
+      "turnaround": 19,
+      "waiting": 10,
+      "response": 10
     },
     {
       "pid": 4,
-      "completion": 17,
-      "turnaround": 14,
-      "waiting": 13,
-      "response": 13
+      "completion": 26,
+      "turnaround": 23,
+      "waiting": 18,
+      "response": 18
     }
   ],
-  "avg_waiting": 8.5,
-  "avg_turnaround": 12.75,
-  "avg_response": 8.5,
+  "avg_waiting": 8.75,
+  "avg_turnaround": 15.25,
+  "avg_response": 8.75,
   "context_switches": 3
 }

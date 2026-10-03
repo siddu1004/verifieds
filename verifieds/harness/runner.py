@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import random
+import shlex
 import shutil
 import statistics
 import subprocess
@@ -138,7 +139,12 @@ def write_batch_file(
 
 
 class BenchmarkRunner:
-    """Compiles, runs, measures and compares execution of binaries."""
+    """Compiles, runs, measures and compares execution of binaries.
+
+    If workload_cmd is None, simulator batch files are generated.
+    If workload_cmd is a string, it runs the command once per size n with
+    placeholders {n}, {seed}, {out} to generate the input file.
+    """
 
     def __init__(
         self,
@@ -147,12 +153,14 @@ class BenchmarkRunner:
         candidate_id: str = "c1",
         runs_per_size: int = 7,
         timeout_sec: float = 10.0,
+        workload_cmd: str | None = None,
     ) -> None:
         self.orig_cmd = orig_cmd
         self.cand_cmd = cand_cmd
         self.candidate_id = candidate_id
         self.runs_per_size = runs_per_size
         self.timeout_sec = timeout_sec
+        self.workload_cmd = workload_cmd
 
     def _run_single(
         self, cmd: list[str], input_text: str | None = None
@@ -178,8 +186,11 @@ class BenchmarkRunner:
         quantum: int | None = None,
         seed: int = 42,
         tmp_dir: Path | None = None,
+        workload_cmd: str | None = None,
     ) -> VerifyReport:
         """Run benchmark over workload sizes and compute crossover_n and speedup."""
+        w_cmd = workload_cmd if workload_cmd is not None else self.workload_cmd
+
         if sizes is None:
             sizes = [100, 1000, 10000]
 
@@ -194,19 +205,38 @@ class BenchmarkRunner:
         workload_results: list[WorkloadResult] = []
 
         for n in sizes:
-            workload = generate_workload(
-                n, seed=seed + n, policy=policy, quantum=quantum
-            )
-            batch_file = tmp_dir / f"workload_{n}.txt"
-            write_batch_file(batch_file, workload, policy=policy, quantum=quantum)
+            if w_cmd is None:
+                workload = generate_workload(
+                    n, seed=seed + n, policy=policy, quantum=quantum
+                )
+                batch_file = tmp_dir / f"workload_{n}.txt"
+                write_batch_file(batch_file, workload, policy=policy, quantum=quantum)
+                run_args = ["--batch", str(batch_file)]
+            else:
+                input_file = tmp_dir / f"input_{n}.txt"
+                gen_cmd_str = w_cmd.format(
+                    n=n, seed=seed + n, out=input_file.as_posix()
+                )
+                gen_args = shlex.split(gen_cmd_str)
+                gen_proc = subprocess.run(
+                    gen_args, capture_output=True, text=True, check=False
+                )
+                if gen_proc.returncode != 0:
+                    err_msg = (
+                        f"Workload generator failed with exit code "
+                        f"{gen_proc.returncode}: {gen_proc.stderr}"
+                    )
+                    return VerifyReport(
+                        candidate_id=self.candidate_id,
+                        equivalent=False,
+                        rejected_reason=err_msg,
+                        workloads=[],
+                    )
+                run_args = [str(input_file)]
 
             # Check output equivalence on run 1
-            code_o, out_o, _ = self._run_single(
-                self.orig_cmd + ["--batch", str(batch_file)]
-            )
-            code_c, out_c, _ = self._run_single(
-                self.cand_cmd + ["--batch", str(batch_file)]
-            )
+            code_o, out_o, _ = self._run_single(self.orig_cmd + run_args)
+            code_c, out_c, _ = self._run_single(self.cand_cmd + run_args)
 
             if code_o != 0 or code_c != 0:
                 equivalent = False
@@ -230,20 +260,17 @@ class BenchmarkRunner:
                         mismatch_reason = f"Output mismatch at n={n}"
                         break
                 except json.JSONDecodeError:
-                    equivalent = False
-                    mismatch_reason = f"JSON decode error or mismatch at n={n}"
-                    break
+                    if out_o.strip() != out_c.strip():
+                        equivalent = False
+                        mismatch_reason = f"Output mismatch at n={n}"
+                        break
 
             # Measure timing across runs
             o_runtimes: list[float] = []
             c_runtimes: list[float] = []
             for _ in range(self.runs_per_size):
-                _, _, dt_o = self._run_single(
-                    self.orig_cmd + ["--batch", str(batch_file)]
-                )
-                _, _, dt_c = self._run_single(
-                    self.cand_cmd + ["--batch", str(batch_file)]
-                )
+                _, _, dt_o = self._run_single(self.orig_cmd + run_args)
+                _, _, dt_c = self._run_single(self.cand_cmd + run_args)
                 o_runtimes.append(dt_o)
                 c_runtimes.append(dt_c)
 
@@ -310,6 +337,7 @@ def compare(
     timer: Any = time.perf_counter,
     policy: str = "SJF",
     quantum: int | None = None,
+    workload_cmd: str | None = None,
 ) -> VerifyReport:
     """Top-level compare function (CompareFn signature)."""
     _ = timer
@@ -325,6 +353,16 @@ def compare(
     )
 
     runner = BenchmarkRunner(
-        orig_cmd, cand_cmd, candidate_id=candidate_id, runs_per_size=runs
+        orig_cmd,
+        cand_cmd,
+        candidate_id=candidate_id,
+        runs_per_size=runs,
+        workload_cmd=workload_cmd,
     )
-    return runner.run_benchmark(sizes=sizes, policy=policy, quantum=quantum, seed=seed)
+    return runner.run_benchmark(
+        sizes=sizes,
+        policy=policy,
+        quantum=quantum,
+        seed=seed,
+        workload_cmd=workload_cmd,
+    )

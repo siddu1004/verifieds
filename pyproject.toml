@@ -47,6 +47,9 @@ markers = [
 [tool.coverage.run]
 branch = true
 source = ["verifieds"]
+omit = [
+    "verifieds/smoke.py", # Excluded per R-09 spec requirement 5 (manual check, not part of test suite)
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

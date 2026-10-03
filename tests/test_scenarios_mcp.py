@@ -102,7 +102,8 @@ def test_mcp_scripted_session() -> None:
         res_verify = await server.call_tool(
             "verify_candidate",
             {
-                "file_path": "sim/src/ReadyQueue.hpp",
+                "project_dir": "sim",
+                "main_file": "src/main.cpp",
                 "diff": cand_obj.diff,
                 "candidate_id": cand_obj.id,
             },

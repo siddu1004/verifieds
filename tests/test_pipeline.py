@@ -200,7 +200,13 @@ def test_run_pipeline(tmp_path: Path):
         out.write_text("binary", encoding="utf-8")
 
     def dummy_compare(
-        _orig: Path, _cand: Path, cid: str, _sizes: list[int], _runs: int, _seed: int
+        _orig: Path,
+        _cand: Path,
+        cid: str,
+        _sizes: list[int],
+        _runs: int,
+        _seed: int,
+        **_kwargs: Any,
     ) -> VerifyReport:
         wl = WorkloadResult(
             n=10, original_ms_median=10.0, candidate_ms_median=5.0, runs=5

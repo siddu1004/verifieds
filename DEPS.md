@@ -2,7 +2,7 @@
 # Format: package | pinned version | why it is needed
 
 pydantic   | ==2.13.4 | Single source of truth for Finding, Candidate, VerifyReport data shapes (S-04)
-mcp        | ==1.30.0 | Official Python MCP SDK for stdio MCP server tools (S-09)
+mcp        | ==1.30.0 | Official Python MCP SDK for stdio MCP server tools via FastMCP.run(transport='stdio') (S-09)
 
 ruff       | ==0.16.9 | Linter: rules F E B ARG UP SIM (quality gate)
 

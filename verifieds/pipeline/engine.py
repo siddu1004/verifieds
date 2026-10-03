@@ -128,6 +128,7 @@ def make_verify_diff(
         main_file: str,
         diff: str,
         candidate_id: str,
+        workload_cmd: str | None = None,
     ) -> VerifyReport:
         nonlocal workspace
         if workspace is None:
@@ -191,6 +192,7 @@ def make_verify_diff(
                 list(sizes),
                 runs,
                 seed,
+                workload_cmd=workload_cmd,
             )
             return cast(VerifyReport, res)
         except Exception as err:

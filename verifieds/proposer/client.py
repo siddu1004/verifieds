@@ -1,11 +1,12 @@
 """Ollama HTTP client for proposal generation."""
 
 import json
-from pathlib import Path
-import urllib.request
+import os
 import urllib.error
+import urllib.request
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
@@ -24,13 +25,31 @@ class OllamaParseError(Exception):
     pass
 
 
+def _env_url() -> str:
+    return os.environ.get("VERIFIEDS_OLLAMA_URL", "http://localhost:11434")
+
+
+def _env_model() -> str:
+    return os.environ.get("VERIFIEDS_OLLAMA_MODEL", "qwen2.5-coder")
+
+
+def _env_timeout() -> float:
+    t = os.environ.get("VERIFIEDS_OLLAMA_TIMEOUT")
+    if t:
+        try:
+            return float(t)
+        except ValueError:
+            pass
+    return 30.0
+
+
 @dataclass(frozen=True)
 class OllamaConfig:
     """Configuration for local Ollama HTTP client."""
 
-    base_url: str = "http://localhost:11434"
-    model: str = "qwen2.5-coder"
-    timeout_seconds: float = 30.0
+    base_url: str = field(default_factory=_env_url)
+    model: str = field(default_factory=_env_model)
+    timeout_seconds: float = field(default_factory=_env_timeout)
 
 
 def _load_prompt_template(name: str) -> str:

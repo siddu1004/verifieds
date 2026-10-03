@@ -94,10 +94,14 @@ def test_claims_audit_table_valid() -> None:
     # Check every claim from README has a row in CLAIMS.md
     readme_claims = [
         "detects data-structure and algorithm bottlenecks",
-        "proposes optimizations using a local LLM",
-        "accepts changes only if proven equivalent",
+        "Proposes candidate optimizations using local Ollama LLM",
+        "accepts changes only if verified equivalent",
         "Resource limits on Windows",
         "process timeout limits",
+        "diagnostics tool",
+        "MCP server stdio interface",
+        "generic C++ project",
+        "Workspace root environment override",
     ]
     claims_text_concat = " ".join(r[1] for r in claims_rows)
     for rc in readme_claims:

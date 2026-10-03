@@ -28,6 +28,8 @@ def build_verify_diff(
         sizes_arg: list[int],
         runs_arg: int,
         seed_arg: int,
+        workload_cmd: str | None = None,
+        **kwargs: Any,
     ) -> Any:
         return real_compare(
             orig_bin,
@@ -36,6 +38,8 @@ def build_verify_diff(
             sizes=sizes_arg,
             runs=runs_arg,
             seed=seed_arg,
+            workload_cmd=workload_cmd,
+            **kwargs,
         )
 
     return make_verify_diff(

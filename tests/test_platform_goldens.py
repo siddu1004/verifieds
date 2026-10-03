@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 from reference_scheduler import IDLE
+from tests.test_reference_scheduler import SET_A
 
 ROOT = Path(__file__).resolve().parent.parent
 GOLDEN_DIR = ROOT / "tests" / "golden" / "platform"
@@ -32,7 +33,6 @@ if sys.platform == "win32" and not shutil.which("g++"):
 CONVOY = [(1, 0, 20, 3), (2, 1, 1, 1), (3, 2, 1, 1), (4, 3, 1, 2)]
 TIES = [(i, 0, 4, 2) for i in range(1, 6)]
 PRIORITY_WAIT = [(1, 0, 5, 9), (2, 1, 2, 1), (3, 2, 2, 1), (4, 3, 2, 1)]
-SET_A = [(1, 0, 10, 3), (2, 1, 4, 1), (3, 2, 2, 4), (4, 3, 1, 2)]
 SET_B = [(1, 0, 5, 2), (2, 2, 3, 1), (3, 4, 1, 3)]
 
 SCENARIO_PROCS: dict[str, tuple[list[tuple[int, int, int, int]], int | None]] = {
