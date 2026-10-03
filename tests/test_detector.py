@@ -33,6 +33,8 @@ def test_rule_loader():
     ],
 )
 def test_rule_fixtures(rule_id: str):
+    """Claim: VerifiedDS detects bottlenecks in C++ code."""
+
     fixture_dir = ROOT / "tests" / "fixtures" / rule_id
     assert fixture_dir.exists(), f"Missing fixture dir for {rule_id}"
 

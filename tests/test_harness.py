@@ -8,7 +8,9 @@ from verifieds.harness.runner import (
     compare,
     generate_workload,
     set_memory_limit,
+    write_batch_file,
 )
+
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -41,7 +43,20 @@ def test_generate_workload(tmp_path: Path):
     assert out_file.exists()
     content = out_file.read_text(encoding="utf-8")
     assert "policy=PRIORITY" in content
+    assert "backend=" not in content
     assert "quantum=4" in content
+
+
+def test_write_batch_file_backend_omitted_by_default(tmp_path: Path):
+    out1 = tmp_path / "b1.txt"
+    write_batch_file(out1, [(1, 0, 5, 1)])
+    content1 = out1.read_text(encoding="utf-8")
+    assert "backend=" not in content1
+
+    out2 = tmp_path / "b2.txt"
+    write_batch_file(out2, [(1, 0, 5, 1)], backend="heap")
+    content2 = out2.read_text(encoding="utf-8")
+    assert "backend=heap" in content2
 
 
 def test_set_memory_limit_windows():
@@ -51,6 +66,7 @@ def test_set_memory_limit_windows():
 
 
 def test_harness_with_sim_cli(sim_cli_path: Path):
+    """Claim: Equivalence testing using seeded workloads and output hashes."""
     res = compare(
         [str(sim_cli_path)],
         [str(sim_cli_path)],
@@ -63,6 +79,7 @@ def test_harness_with_sim_cli(sim_cli_path: Path):
 
 
 def test_harness_synthetic_on_vs_on2(tmp_path: Path):
+    """Claim: Empirical benchmark harness with crossover analysis."""
     script_on = tmp_path / "on.py"
     script_on2 = tmp_path / "on2.py"
 

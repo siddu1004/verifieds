@@ -76,14 +76,39 @@ def apply_patch(target_dir: Path, diff: str) -> bool:
         return True
     try:
         proc = subprocess.run(
-            ["git", "apply", "--reject", "--whitespace=fix"],
+            [
+                "git",
+                "apply",
+                "--reject",
+                "--whitespace=fix",
+                "--ignore-space-change",
+                "--ignore-whitespace",
+            ],
             input=diff,
             cwd=target_dir,
             capture_output=True,
             text=True,
             check=False,
         )
-        return proc.returncode == 0
+        if proc.returncode == 0:
+            return True
+        proc_p0 = subprocess.run(
+            [
+                "git",
+                "apply",
+                "--reject",
+                "-p0",
+                "--whitespace=fix",
+                "--ignore-space-change",
+                "--ignore-whitespace",
+            ],
+            input=diff,
+            cwd=target_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        return proc_p0.returncode == 0
     except Exception:
         return False
 

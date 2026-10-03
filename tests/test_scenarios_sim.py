@@ -180,12 +180,14 @@ HAND = [
     [pytest.param(*h[1:], id=h[0]) for h in HAND],
 )
 def test_hand_computed_scenarios(cli, procs, policy, quantum, text, avgs):
-    """Purpose: named textbook scenarios (convoy, ties, priority wait).
+    """Claim: Core simulator structures (DynArray, BST, MinHeap, ReadyQueue)
+    and multi-policy study results (FCFS, SJF, SRTF, RR, PRIORITY).
 
     Input: tables above. Expected: exact Gantt text and averages from hand
     computation, also equal to the oracle. Catches: wrong tie-breaks, wrong
     preemption rule, wrong RR queue order.
     """
+
     for backend in ("array", "heap") if policy != "RR" else ("array",):
         out = assert_oracle(cli, procs, policy, quantum, backend)
         assert gantt_text(out) == text

@@ -120,11 +120,13 @@ def write_batch_file(
     path: Path,
     procs: list[tuple[int, int, int, int]],
     policy: str = "SJF",
-    backend: str = "array",
+    backend: str | None = None,
     quantum: int | None = None,
 ) -> None:
     """Write process batch file for sim_cli."""
-    lines = [f"policy={policy}", f"backend={backend}"]
+    lines = [f"policy={policy}"]
+    if backend is not None:
+        lines.append(f"backend={backend}")
     if quantum is not None:
         lines.append(f"quantum={quantum}")
     lines.append(f"processes={len(procs)}")
@@ -218,6 +220,11 @@ class BenchmarkRunner:
                 try:
                     data_o = json.loads(out_o)
                     data_c = json.loads(out_c)
+                    if isinstance(data_o, dict) and isinstance(data_c, dict):
+                        data_o = dict(data_o)
+                        data_c = dict(data_c)
+                        data_o.pop("backend", None)
+                        data_c.pop("backend", None)
                     if data_o != data_c:
                         equivalent = False
                         mismatch_reason = f"Output mismatch at n={n}"

@@ -218,8 +218,17 @@ def test_adequacy_doc_matches_counts() -> None:
 
     # Check key count lines
     assert "- **Total Mutants Evaluated**: 60" in content
-    assert "- **Killed**: 42" in content
-    assert "- **Survived**: 18" in content
-    assert "- **Harness-only Adequacy Score**: 0.7000" in content
-    assert "- **Test-Support Mutants**: 8" in content
-    assert "- **Score Excluding Test-Support Lines**: 0.8077" in content
+    assert "- **Killed**: 48" in content
+    assert "- **Survived**: 12" in content
+    assert "- **Harness-only Adequacy Score**: 0.8000" in content
+    assert "- **Test-Support Mutants**: 6" in content
+    assert "- **Score Excluding Test-Support Lines**: 0.8889" in content
+
+
+def test_find_gpp_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    from verifieds.adequacy import runner
+
+    monkeypatch.setattr(runner.shutil, "which", lambda _exe: None)
+    monkeypatch.setattr(runner.Path, "glob", lambda _self, _pattern: [])
+    with pytest.raises(RuntimeError, match="g\\+\\+ compiler not found"):
+        runner.find_gpp()

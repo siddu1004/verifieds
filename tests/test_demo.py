@@ -1,23 +1,77 @@
-"""Demo runner test suite regenerating results/demo.md deterministically (T6)."""
+"""Demo runner test suite regenerating results/demo.md deterministically (T6 / R-07)."""
 
+import difflib
 from pathlib import Path
 
-from reference_scheduler import schedule
-from test_reference_scheduler import SET_A
+from tests.reference_scheduler import schedule
+from tests.test_reference_scheduler import SET_A
+from verifieds.adequacy.runner import run_adequacy_assessment
 from verifieds.detector.engine import analyze_file
-from verifieds.schemas.models import VerifyReport, WorkloadResult
+from verifieds.wiring import build_verify_diff
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = ROOT / "results"
 DEMO_MD = RESULTS_DIR / "demo.md"
 
 
-def generate_demo_content() -> str:
-    """Generate deterministic markdown report for the end-to-end demo story.
+def get_diff_pa() -> str:
+    config_file = ROOT / "sim" / "src" / "Config.hpp"
+    orig_config = config_file.read_text(encoding="utf-8")
+    cand_config = orig_config.replace(
+        'constexpr std::string_view kDefaultBackend = "array";',
+        'constexpr std::string_view kDefaultBackend = "heap";',
+    )
+    diff_lines = list(
+        difflib.unified_diff(
+            orig_config.splitlines(keepends=True),
+            cand_config.splitlines(keepends=True),
+            fromfile="a/src/Config.hpp",
+            tofile="b/src/Config.hpp",
+        )
+    )
+    return "".join(diff_lines)
+
+
+def get_diff_pb() -> str:
+    config_file = ROOT / "sim" / "src" / "Config.hpp"
+    orig_config = config_file.read_text(encoding="utf-8")
+    cand_config = orig_config.replace(
+        'constexpr std::string_view kDefaultBackend = "array";',
+        'constexpr std::string_view kDefaultBackend = "heap";',
+    )
+    diff_config = "".join(
+        difflib.unified_diff(
+            orig_config.splitlines(keepends=True),
+            cand_config.splitlines(keepends=True),
+            fromfile="a/src/Config.hpp",
+            tofile="b/src/Config.hpp",
+        )
+    )
+
+    rq_file = ROOT / "sim" / "src" / "ReadyQueue.hpp"
+    orig_rq = rq_file.read_text(encoding="utf-8")
+    cand_rq = orig_rq.replace(
+        "return pid < other.pid;",
+        "return false;",
+    )
+    diff_rq = "".join(
+        difflib.unified_diff(
+            orig_rq.splitlines(keepends=True),
+            cand_rq.splitlines(keepends=True),
+            fromfile="a/src/ReadyQueue.hpp",
+            tofile="b/src/ReadyQueue.hpp",
+        )
+    )
+    return diff_config + diff_rq
+
+
+def generate_demo_content(workspace: Path | None = None) -> str:
+    """Generate deterministic markdown report using real components.
 
     Contains NO dates, NO timestamps, and NO hardware timings to ensure
     byte-level reproducibility across consecutive runs.
     """
+
     lines: list[str] = [
         "# VerifiedDS End-to-End Execution Demo",
         "",
@@ -44,55 +98,59 @@ def generate_demo_content() -> str:
     lines.append("## 3. Pipeline Candidate Verification")
     lines.append("")
 
-    cand1_report = VerifyReport(
+    verify_diff = build_verify_diff(workspace=workspace, sizes=[20, 50], runs=2)
+    rep1 = verify_diff(
+        source_dir=ROOT / "sim",
+        main_file="src/main.cpp",
+        diff=get_diff_pa(),
         candidate_id="cand_heap_rewrite",
-        equivalent=True,
-        workloads=[
-            WorkloadResult(
-                n=100, original_ms_median=10.0, candidate_ms_median=5.0, runs=5
-            )
-        ],
-        speedup_at_max_n=2.0,
     )
 
-    cand2_report = VerifyReport(
+    rep2 = verify_diff(
+        source_dir=ROOT / "sim",
+        main_file="src/main.cpp",
+        diff=get_diff_pb(),
         candidate_id="cand_tiebreak_mutant",
-        equivalent=False,
-        rejected_reason="Output mismatch: process tie-break ordering violated",
-        workloads=[],
     )
 
     lines.append(
-        f"Candidate 1 (Array -> Heap Rewrite): "
-        f"Equivalent={cand1_report.equivalent}, Speedup=2.0x"
+        f"Candidate 1 (Array -> Heap Config Rewrite): Equivalent={rep1.equivalent}"
     )
     lines.append(
         f"Candidate 2 (Tie-break Mutant): "
-        f"Equivalent={cand2_report.equivalent}, Reason={cand2_report.rejected_reason}"
+        f"Equivalent={rep2.equivalent}, Reason={rep2.rejected_reason}"
     )
     lines.append("")
 
     lines.append("## 4. Workload Adequacy Assessment Summary")
     lines.append("")
 
-    lines.append("- Total Mutants Evaluated: 60")
-    lines.append("- Killed: 42")
-    lines.append("- Survived: 18")
-    lines.append("- Harness-only Adequacy Score: 0.7000")
-    lines.append("- Test-Support Mutants: 8")
-    lines.append("- Score Excluding Test-Support Lines: 0.8077")
+    adeq_rep = run_adequacy_assessment(max_mutants=60, max_workers=1, seed=42)
+
+    total_eval = adeq_rep.killed + adeq_rep.survived + adeq_rep.invalid
+    lines.append(f"- Total Mutants Evaluated: {total_eval}")
+    lines.append(f"- Killed: {adeq_rep.killed}")
+    lines.append(f"- Survived: {adeq_rep.survived}")
+    lines.append(f"- Harness-only Adequacy Score: {adeq_rep.score:.4f}")
+    lines.append(f"- Test-Support Mutants: {adeq_rep.test_support_count}")
+    score_ex_val = adeq_rep.score_excluding_test_support
+    lines.append(f"- Score Excluding Test-Support Lines: {score_ex_val:.4f}")
+
     lines.append("")
 
     return "\n".join(lines)
 
 
-def test_demo_reproducible() -> None:
+def test_demo_reproducible(tmp_path: Path) -> None:
     """Verify test_demo.py generates results/demo.md deterministically."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    content1 = generate_demo_content()
+    ws1 = tmp_path / "ws1"
+    ws2 = tmp_path / "ws2"
+
+    content1 = generate_demo_content(workspace=ws1)
     DEMO_MD.write_text(content1, encoding="utf-8")
 
-    content2 = generate_demo_content()
+    content2 = generate_demo_content(workspace=ws2)
     assert content1 == content2, "results/demo.md generation must be byte-identical"
     assert DEMO_MD.exists()

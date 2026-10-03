@@ -13,14 +13,14 @@ Findings Detected: 3
 
 ## 3. Pipeline Candidate Verification
 
-Candidate 1 (Array -> Heap Rewrite): Equivalent=True, Speedup=2.0x
-Candidate 2 (Tie-break Mutant): Equivalent=False, Reason=Output mismatch: process tie-break ordering violated
+Candidate 1 (Array -> Heap Config Rewrite): Equivalent=True
+Candidate 2 (Tie-break Mutant): Equivalent=False, Reason=Output mismatch at n=20
 
 ## 4. Workload Adequacy Assessment Summary
 
 - Total Mutants Evaluated: 60
-- Killed: 42
-- Survived: 18
-- Harness-only Adequacy Score: 0.7000
-- Test-Support Mutants: 8
-- Score Excluding Test-Support Lines: 0.8077
+- Killed: 0
+- Survived: 60
+- Harness-only Adequacy Score: 0.0000
+- Test-Support Mutants: 29
+- Score Excluding Test-Support Lines: 0.0000

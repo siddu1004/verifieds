@@ -29,3 +29,12 @@ def test_study_main_cli(tmp_path: Path) -> None:
         main()
     assert (out_dir / "study_results.csv").exists()
     assert (out_dir / "summary_stats.csv").exists()
+
+
+def test_study_real_proposer_fallback(tmp_path: Path) -> None:
+    """Non-dry-run study handles proposer fallback gracefully."""
+    out_dir = tmp_path / "fallback"
+    raw_p, sum_p = run_study(
+        out_dir, dry_run=False, models=["test_model"], policies=["FCFS"]
+    )
+    assert raw_p.exists() and sum_p.exists()

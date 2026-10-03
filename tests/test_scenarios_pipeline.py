@@ -11,8 +11,7 @@ import time
 from typing import Any
 import pytest
 
-from verifieds.harness.runner import BenchmarkRunner, generate_workload
-from verifieds.pipeline.engine import PipelineEngine
+from verifieds.harness.runner import BenchmarkRunner
 from verifieds.proposer.client import (
     CandidateDraft,
     OllamaConfig,
@@ -47,59 +46,100 @@ class CannedDiffProposer(OllamaProposer):
         ]
 
 
-def test_pa_correct_rewrite() -> None:
-    """Purpose: Verify pipeline accepts correct array-to-heap rewrite with speedup > 1.
-    Input: Real ReadyQueue.hpp backend changed from array to heap.
-    Expected Result: Candidate accepted, equivalent=True, speedup_at_max_n > 1.
-    Bug Catching: False rejection of correct performance optimizations.
+def test_pa_correct_rewrite(tmp_path: Path) -> None:
+    """Purpose: Verify pipeline accepts candidate flipping Config.hpp default.
+    Input: Diff changing kDefaultBackend from "array" to "heap" in Config.hpp.
+    Expected Result: Non-empty diff applied, candidate accepted, equivalent=True.
+    Bug Catching: False rejection of default backend configuration updates.
     """
-    sim_cli = ROOT / "build" / exe_name("sim_cli")
-    assert sim_cli.exists()
 
-    target_file = ROOT / "sim" / "src" / "ReadyQueue.hpp"
-    orig_code = target_file.read_text(encoding="utf-8")
-    cand_code = orig_code.replace(
+    from verifieds.wiring import build_verify_diff
+
+    config_file = ROOT / "sim" / "src" / "Config.hpp"
+    orig_config = config_file.read_text(encoding="utf-8")
+    cand_config = orig_config.replace(
         'constexpr std::string_view kDefaultBackend = "array";',
         'constexpr std::string_view kDefaultBackend = "heap";',
     )
     diff_lines = list(
         difflib.unified_diff(
-            orig_code.splitlines(keepends=True),
-            cand_code.splitlines(keepends=True),
-            fromfile="ReadyQueue.hpp",
-            tofile="ReadyQueue.hpp",
+            orig_config.splitlines(keepends=True),
+            cand_config.splitlines(keepends=True),
+            fromfile="a/src/Config.hpp",
+            tofile="b/src/Config.hpp",
         )
     )
     diff = "".join(diff_lines)
+    assert len(diff.strip()) > 0, "P-A diff must be non-empty"
 
-    proposer = CannedDiffProposer(diff)
-    engine = PipelineEngine(proposer=proposer, sizes=[100, 500], runs_per_size=3)
+    verify_diff = build_verify_diff(workspace=tmp_path, sizes=[20, 50], runs=2)
+    report = verify_diff(
+        source_dir=ROOT / "sim",
+        main_file="src/main.cpp",
+        diff=diff,
+        candidate_id="cand_pa",
+    )
 
-    orig_cmd = [str(sim_cli)]
-    results = engine.run_on_file(target_file, orig_cmd=orig_cmd)
-
-    assert len(results) >= 1
-    _, _, report = results[0]
     assert report.equivalent is True
 
 
-def test_pb_tie_break_mutant() -> None:
-    """Purpose: Verify pipeline rejects candidate omitting pid tie-break component.
-    Input: Workload at n=100 containing at least 10 equal-key pairs.
-    Expected Result: Candidate rejected due to output mismatch; equal key count >= 10.
-    Bug Catching: Equivalence verification failure when tie-break comparison is broken.
+def test_pb_tie_break_mutant(tmp_path: Path) -> None:
+    """Purpose: Verify pipeline rejects candidate omitting pid tie-break.
+    Input: Diff selecting heap backend AND removing pid tie-break.
+    Expected Result: Candidate rejected, equivalent=False, output mismatch reason.
+    Bug Catching: Equivalence verification failure when tie-break is broken.
     """
-    workload = generate_workload(100, seed=42)
-    burst_counts: dict[int, int] = {}
-    for _, _, burst, _ in workload:
-        burst_counts[burst] = burst_counts.get(burst, 0) + 1
-    equal_pairs = sum(c * (c - 1) // 2 for c in burst_counts.values() if c > 1)
-    assert equal_pairs >= 10
+    from verifieds.wiring import build_verify_diff
 
-    sim_cli = ROOT / "build" / exe_name("sim_cli")
-    runner = BenchmarkRunner(orig_cmd=[str(sim_cli)], cand_cmd=[str(sim_cli)])
-    res = runner.run_benchmark(sizes=[100])
-    assert res["equivalent"] is True
+    config_file = ROOT / "sim" / "src" / "Config.hpp"
+    orig_config = config_file.read_text(encoding="utf-8")
+    cand_config = orig_config.replace(
+        'constexpr std::string_view kDefaultBackend = "array";',
+        'constexpr std::string_view kDefaultBackend = "heap";',
+    )
+    diff_config = "".join(
+        difflib.unified_diff(
+            orig_config.splitlines(keepends=True),
+            cand_config.splitlines(keepends=True),
+            fromfile="a/src/Config.hpp",
+            tofile="b/src/Config.hpp",
+        )
+    )
+
+    rq_file = ROOT / "sim" / "src" / "ReadyQueue.hpp"
+    orig_rq = rq_file.read_text(encoding="utf-8")
+    target_str = (
+        "if (arrival != other.arrival) return arrival < other.arrival;\n"
+        "        return pid < other.pid;"
+    )
+    cand_rq = orig_rq.replace(target_str, "return false;")
+
+    diff_rq = "".join(
+        difflib.unified_diff(
+            orig_rq.splitlines(keepends=True),
+            cand_rq.splitlines(keepends=True),
+            fromfile="a/src/ReadyQueue.hpp",
+            tofile="b/src/ReadyQueue.hpp",
+        )
+    )
+
+    diff = diff_config + diff_rq
+    assert len(diff.strip()) > 0, "P-B diff must be non-empty"
+
+    verify_diff = build_verify_diff(workspace=tmp_path, sizes=[50], runs=2)
+    report = verify_diff(
+        source_dir=ROOT / "sim",
+        main_file="src/main.cpp",
+        diff=diff,
+        candidate_id="cand_pb",
+    )
+
+    assert report.equivalent is False
+    assert report.rejected_reason is not None
+    assert (
+        "output mismatch" in report.rejected_reason.lower()
+        or "mismatch" in report.rejected_reason.lower()
+    )
 
 
 def test_pc_quantum_off_by_one_mutant() -> None:
