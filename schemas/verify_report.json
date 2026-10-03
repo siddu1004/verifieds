@@ -5,18 +5,22 @@
       "description": "Performance measurement result for a single workload size n.",
       "properties": {
         "n": {
+          "exclusiveMinimum": 0,
           "title": "N",
           "type": "integer"
         },
         "original_ms_median": {
+          "minimum": 0.0,
           "title": "Original Ms Median",
           "type": "number"
         },
         "candidate_ms_median": {
+          "minimum": 0.0,
           "title": "Candidate Ms Median",
           "type": "number"
         },
         "runs": {
+          "exclusiveMinimum": 0,
           "title": "Runs",
           "type": "integer"
         }
@@ -62,12 +66,22 @@
       "type": "array"
     },
     "speedup_at_max_n": {
-      "title": "Speedup At Max N",
-      "type": "number"
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Speedup At Max N"
     },
     "crossover_n": {
       "anyOf": [
         {
+          "exclusiveMinimum": 0,
           "type": "integer"
         },
         {
@@ -81,8 +95,7 @@
   "required": [
     "candidate_id",
     "equivalent",
-    "workloads",
-    "speedup_at_max_n"
+    "workloads"
   ],
   "title": "VerifyReport",
   "type": "object"

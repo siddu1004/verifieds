@@ -1,0 +1,33 @@
+{
+  "additionalProperties": false,
+  "description": "Raw candidate modification proposed directly by the LLM (without system IDs).",
+  "properties": {
+    "strategy": {
+      "title": "Strategy",
+      "type": "string"
+    },
+    "diff": {
+      "title": "Diff",
+      "type": "string"
+    },
+    "expected_complexity_after": {
+      "title": "Expected Complexity After",
+      "type": "string"
+    },
+    "risks": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Risks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "strategy",
+    "diff",
+    "expected_complexity_after",
+    "risks"
+  ],
+  "title": "CandidateDraft",
+  "type": "object"
+}

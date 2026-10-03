@@ -1,0 +1,48 @@
+{
+  "policy": "SRTF",
+  "backend": "heap",
+  "gantt": [
+    {
+      "pid": 1,
+      "start": 0,
+      "end": 5
+    },
+    {
+      "pid": 3,
+      "start": 5,
+      "end": 6
+    },
+    {
+      "pid": 2,
+      "start": 6,
+      "end": 9
+    }
+  ],
+  "metrics": [
+    {
+      "pid": 1,
+      "completion": 5,
+      "turnaround": 5,
+      "waiting": 0,
+      "response": 0
+    },
+    {
+      "pid": 2,
+      "completion": 9,
+      "turnaround": 7,
+      "waiting": 4,
+      "response": 4
+    },
+    {
+      "pid": 3,
+      "completion": 6,
+      "turnaround": 2,
+      "waiting": 1,
+      "response": 1
+    }
+  ],
+  "avg_waiting": 1.666667,
+  "avg_turnaround": 4.666667,
+  "avg_response": 1.666667,
+  "context_switches": 2
+}

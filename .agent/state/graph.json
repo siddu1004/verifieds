@@ -1,0 +1,387 @@
+{
+  "nodes": [
+    {
+      "id": "R-05",
+      "title": "N0 BOOT",
+      "deps": [],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Boot environment, tasks.py, config, and preflight",
+      "reflection": {
+        "C1": "yes - test_smoke.cpp, test_structures.cpp, test_proposer.py, test_schemas.py, test_smoke.py",
+        "C2": "yes - searched diff for unused symbols, TODO, commented-out code: none found",
+        "C3": "yes - only planned files modified according to git status",
+        "C4": "yes - dependencies pinned in pyproject.toml and verified via DEPS.md",
+        "C5": "yes - Windows paths handled via pathlib and tasks.py supports win32",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task R-05",
+        "C7": "yes - no checks or thresholds weakened",
+        "C8": "yes - hand-written data structures in sim/src comply with A7"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-02",
+      "title": "N1 S-02 scheduler engine",
+      "deps": [
+        "R-05"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch sim/src/Process.hpp, ReadyQueue.hpp, Scheduler.hpp, sim/CMakeLists.txt, sim/tests/test_scheduler.cpp. Write Golden Set A/B tests first.",
+      "reflection": {
+        "C1": "yes - test_validation, test_golden_set_a, test_golden_set_b, test_random_workloads",
+        "C2": "yes - searched diff for unused symbols, TODO, commented-out code: none found",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - no new dependencies added; complies with A2",
+        "C5": "yes - standard C++20 headers and pathlib tasks.py execution",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-02",
+        "C7": "yes - no test weakened or suppression added",
+        "C8": "yes - hand-written data structures used in sim/src comply with A7"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-03",
+      "title": "N2 S-03 CLI",
+      "deps": [
+        "S-02"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch sim/src/Config.hpp, Sort.hpp, main.cpp, sim/CMakeLists.txt, tests/test_sim_cli.py. Write test_sim_cli.py first.",
+      "reflection": {
+        "C1": "yes - test_batch_mode_set_a_all_policies, test_batch_mode_rr, test_interactive_mode, test_batch_mode_malformed",
+        "C2": "yes - searched diff for unused symbols, TODO, commented-out code: none found",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - standard library + pinned dependencies",
+        "C5": "yes - handled win32 executable name extension (.exe) and path resolution",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-03",
+        "C7": "yes - no checks or thresholds weakened",
+        "C8": "yes - custom merge sort and hand-written BST/Stack used in sim/src"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-05",
+      "title": "N3 S-05 detector",
+      "deps": [
+        "S-02"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch verifieds/detector/scanner.py, loader.py, engine.py, verifieds/rules/*, tests/test_detector.py. Write test_detector.py first.",
+      "reflection": {
+        "C1": "yes - test_rule_loading, test_analyze_file_with_rules",
+        "C2": "yes - no dead code or unused symbols",
+        "C3": "yes - only planned files changed",
+        "C4": "yes - dependencies compliant with A2",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-05",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-06",
+      "title": "N4 S-06 harness",
+      "deps": [
+        "S-02",
+        "S-03"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch verifieds/harness/runner.py, tests/test_harness.py. Write test_harness.py first.",
+      "reflection": {
+        "C1": "yes - test_benchmark_runner_equivalence, test_generate_workload",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files changed",
+        "C4": "yes - stdlib + pydantic",
+        "C5": "yes - Windows PATH resolution and executable name handling",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-06",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-08",
+      "title": "N5 S-08 pipeline",
+      "deps": [
+        "S-05",
+        "S-06"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch verifieds/pipeline/engine.py, tests/test_pipeline.py. Write test_pipeline.py first.",
+      "reflection": {
+        "C1": "yes - test_pipeline_engine_run",
+        "C2": "yes - no unused symbols",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib + pydantic",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-08",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-09",
+      "title": "N6 S-09 MCP server",
+      "deps": [
+        "S-08"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch verifieds/mcp/server.py, tests/test_mcp.py. Write test_mcp.py first.",
+      "reflection": {
+        "C1": "yes - test_mcp_tools, test_path_escape_prevention",
+        "C2": "yes - no unused symbols",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - added mcp to pyproject.toml and DEPS.md",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-09",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-10",
+      "title": "N7 S-10 safety",
+      "deps": [
+        "S-09"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch tests/test_safety.py, verifieds/proposer/client.py. Write test_safety.py first.",
+      "reflection": {
+        "C1": "yes - test_prompt_injection_ignored, test_harness_workspace_isolation, test_env_secrets_not_leaked",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib + pydantic",
+        "C5": "yes - Windows path handling verified",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-10",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-11",
+      "title": "N8 S-11 study",
+      "deps": [
+        "S-08"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch verifieds/study/runner.py, scripts/run_study.py, tests/test_study.py. Write test_study.py first.",
+      "reflection": {
+        "C1": "yes - test_study_dry_run_deterministic, test_study_main_cli",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib csv and statistics used; complies with A2",
+        "C5": "yes - Windows path handling verified",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-11",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "S-12",
+      "title": "N9 S-12 docs",
+      "deps": [
+        "S-10",
+        "S-11"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch README.md, docs/REPORT_OUTLINE.md, tests/test_readme.py. Write test_readme.py first.",
+      "reflection": {
+        "C1": "yes - test_readme_contents, test_report_outline_contents",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - standard library + pydantic",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated via tasks.py evidence --task S-12",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "RELEASE",
+      "title": "N10 RELEASE",
+      "deps": [
+        "S-12"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Master prompt backlog S-00..S-12 complete.",
+      "reflection": {
+        "C1": "yes - all S-00..S-12 tasks verified with evidence",
+        "C2": "yes - no dead code",
+        "C3": "yes - all planned files modified",
+        "C4": "yes - A2 compliant",
+        "C5": "yes - Windows paths supported",
+        "C6": "yes - evidence exit0",
+        "C7": "yes - no gates weakened",
+        "C8": "yes - sim/src A7 compliant"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q0",
+      "title": "Q0 Oracle and catalogue",
+      "deps": [
+        "RELEASE"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch tests/reference_scheduler.py, tests/test_reference_scheduler.py, docs/SCENARIOS.md, tests/conftest.py, tasks.py. Write test_reference_scheduler.py first.",
+      "reflection": {
+        "C1": "yes - test_reference_scheduler_set_a_fcfs, test_reference_scheduler_set_a_sjf, test_reference_scheduler_set_a_srtf, test_reference_scheduler_set_a_rr, test_reference_scheduler_set_a_priority, test_reference_scheduler_set_b",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files modified",
+        "C4": "yes - stdlib only",
+        "C5": "yes - win32 executable name handling in conftest.py",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q0",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q1",
+      "title": "Q1 Simulator scenarios",
+      "deps": [
+        "Q0"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch tests/test_scenarios_sim.py. Write SC-1..SC-6 and M1..M6 tests first.",
+      "reflection": {
+        "C1": "yes - test_sc1_convoy, test_sc2_simultaneous_ties, test_sc3_priority_wait, test_sc4_single_process, test_sc5_idle_first, test_sc6_rr_extremes, test_metamorphic_properties, test_differential_oracle_500_workloads, test_scale_20k_workload, test_malformed_interactive_inputs",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib + pydantic",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q1",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q2",
+      "title": "Q2 Pipeline scenarios",
+      "deps": [
+        "Q1"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch tests/test_scenarios_pipeline.py, verifieds/proposer/client.py. Write P-A..P-F and L-1..L-7 tests first.",
+      "reflection": {
+        "C1": "yes - test_pa_correct_rewrite, test_pb_tie_break_mutant, test_pc_quantum_off_by_one_mutant, test_pd_fixed_json_candidate, test_pe_late_crossover, test_pf_compile_and_loop_error, test_l1_prose_response, test_l2_markdown_fences, test_l3_5mb_body, test_l4_extra_keys, test_l5_empty_candidates, test_l6_slow_response, test_l7_connection_refused",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib http.server used for L-scenarios; complies with A2",
+        "C5": "yes - Windows socket handling verified",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q2",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q3",
+      "title": "Q3 MCP scenario",
+      "deps": [
+        "Q1"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch tests/test_scenarios_mcp.py. Write end-to-end scripted session and error scenario tests first.",
+      "reflection": {
+        "C1": "yes - test_mcp_scripted_session, test_mcp_error_scenarios",
+        "C2": "yes - no unused symbols or TODOs",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - mcp + pydantic + stdlib; complies with A2",
+        "C5": "yes - Windows paths handled",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q3",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q4",
+      "title": "Q4 Workload-adequacy score",
+      "deps": [
+        "Q2"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "Touch DECISIONS.md, verifieds/schemas/models.py, export.py, __init__.py, schemas/adequacy_report.json, verifieds/adequacy/*, docs/ADEQUACY.md, tests/test_adequacy.py. Write test_adequacy.py first.",
+      "reflection": {
+        "C1": "yes - test_mutator_operator_swaps, test_adequacy_report_model, test_invalid_mutants_excluded_from_score, test_synthetic_weak_vs_rich_workload, test_run_adequacy_assessment_in_process, test_cli_adequacy_runner_in_process, test_cli_adequacy_runner_subprocess",
+        "C2": "yes - no dead code or unused symbols",
+        "C3": "yes - only planned files touched",
+        "C4": "yes - stdlib + pydantic; complies with A2",
+        "C5": "yes - Windows path handling verified",
+        "C6": "yes - evidence generated strictly via tasks.py evidence --task Q4",
+        "C7": "yes - no gate weakened",
+        "C8": "yes - sim/src untouched"
+      },
+      "evidence": "exit0",
+      "ci": "success"
+    },
+    {
+      "id": "Q5",
+      "title": "Q5 Cross-platform goldens",
+      "deps": [
+        "Q4"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    },
+    {
+      "id": "Q6",
+      "title": "Q6 Demo and claims audit",
+      "deps": [
+        "Q3",
+        "Q5"
+      ],
+      "state": "review",
+      "iter": "unknown",
+      "plan": "",
+      "reflection": {},
+      "evidence": "",
+      "ci": ""
+    }
+  ],
+  "gate_passed": [
+    "G3"
+  ]
+}

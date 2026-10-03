@@ -1,0 +1,7 @@
+{
+  "rule_id": "adjacent-swap-sort",
+  "adt": "sort",
+  "impl": "Bubble sort adjacent swap",
+  "complexity_before": "O(n^2)",
+  "description": "Nested loops comparing adjacent array elements and swapping"
+}

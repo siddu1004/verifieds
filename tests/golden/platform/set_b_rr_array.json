@@ -1,0 +1,53 @@
+{
+  "policy": "RR",
+  "backend": "array",
+  "gantt": [
+    {
+      "pid": 1,
+      "start": 0,
+      "end": 3
+    },
+    {
+      "pid": 2,
+      "start": 3,
+      "end": 6
+    },
+    {
+      "pid": 1,
+      "start": 6,
+      "end": 8
+    },
+    {
+      "pid": 3,
+      "start": 8,
+      "end": 9
+    }
+  ],
+  "metrics": [
+    {
+      "pid": 1,
+      "completion": 8,
+      "turnaround": 8,
+      "waiting": 3,
+      "response": 0
+    },
+    {
+      "pid": 2,
+      "completion": 6,
+      "turnaround": 4,
+      "waiting": 1,
+      "response": 1
+    },
+    {
+      "pid": 3,
+      "completion": 9,
+      "turnaround": 5,
+      "waiting": 4,
+      "response": 4
+    }
+  ],
+  "avg_waiting": 2.666667,
+  "avg_turnaround": 5.666667,
+  "avg_response": 1.666667,
+  "context_switches": 3
+}

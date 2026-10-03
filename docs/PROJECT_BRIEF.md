@@ -13,8 +13,8 @@ is faster at scale. It reports the crossover size n* above which the change pays
   Policies: FCFS, SJF (non-preemptive), SRTF, Round Robin, Priority (non-preemptive).
   Two ready-queue backends behind one interface: ArrayReadyQueue (linear min-scan) and
   HeapReadyQueue. Ties are broken by arrival time, then pid.
-- verifieds/: Python package: detector, harness, proposer, MCP server, study.
-- Detection is limited to four rules: array-queue-front-removal, linear-min-extract,
+- verifieds/: Python package: detector (pure-Python token scanner per D-3), harness, proposer, MCP server, study.
+- Detection is limited to four rules (JSON metadata + Python matcher): array-queue-front-removal, linear-min-extract,
   adjacent-swap-sort, linear-search-in-loop. Do not add rules without a new task.
 
 ## Data shapes (single source: Pydantic models, exported to schemas/*.json)
