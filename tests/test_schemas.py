@@ -182,6 +182,28 @@ def test_verify_report_constraints_and_decision_d1() -> None:
             crossover_n=None,
         )
 
+    # equivalent=False but rejected_reason is None
+    with pytest.raises(ValidationError, match="rejected_reason is required"):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=False,
+            rejected_reason=None,
+            workloads=[],
+            speedup_at_max_n=None,
+            crossover_n=None,
+        )
+
+    # equivalent=True but rejected_reason is set
+    with pytest.raises(ValidationError, match="rejected_reason must be None"):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=True,
+            rejected_reason="Should be None",
+            workloads=[workload],
+            speedup_at_max_n=2.0,
+            crossover_n=None,
+        )
+
     # crossover_n <= 0
     with pytest.raises(ValidationError):
         VerifyReport(
@@ -192,6 +214,39 @@ def test_verify_report_constraints_and_decision_d1() -> None:
             speedup_at_max_n=2.0,
             crossover_n=0,
         )
+
+
+def test_verify_report_dict_access_and_get() -> None:
+    """Test __getitem__ and get methods of VerifyReport."""
+    workload = WorkloadResult(
+        n=100, original_ms_median=1.0, candidate_ms_median=0.5, runs=5
+    )
+    rep_eq = VerifyReport(
+        candidate_id="c1",
+        equivalent=True,
+        rejected_reason=None,
+        workloads=[workload],
+        speedup_at_max_n=2.0,
+    )
+    rep_neq = VerifyReport(
+        candidate_id="c2",
+        equivalent=False,
+        rejected_reason="Mismatch",
+        workloads=[],
+    )
+
+    assert rep_eq["candidate_id"] == "c1"
+    assert rep_eq["reason"] is None
+    assert rep_neq["reason"] == "Mismatch"
+
+    with pytest.raises(KeyError):
+        _ = rep_eq["non_existent_key"]
+
+    assert rep_eq.get("reason") is None
+    assert rep_eq.get("reason", "default_val") == "default_val"
+    assert rep_neq.get("reason") == "Mismatch"
+    assert rep_eq.get("candidate_id") == "c1"
+    assert rep_eq.get("non_existent_key", 42) == 42
 
 
 def test_schema_export_and_check(tmp_path: Path) -> None:

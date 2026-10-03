@@ -24,13 +24,24 @@ def sim_cli_path() -> Path:
     return cli_path
 
 
-def test_generate_workload():
+def test_generate_workload(tmp_path: Path):
     wl1 = generate_workload(10, seed=42)
     wl2 = generate_workload(10, seed=42)
     wl3 = generate_workload(10, seed=43)
     assert len(wl1) == 10
     assert wl1 == wl2
     assert wl1 != wl3
+
+    # Test ties=True, policy="PRIORITY", quantum and writing to batch file
+    out_file = tmp_path / "batch.txt"
+    wl_ties = generate_workload(
+        5, seed=42, path=out_file, policy="PRIORITY", quantum=4, ties=True
+    )
+    assert len(wl_ties) == 5
+    assert out_file.exists()
+    content = out_file.read_text(encoding="utf-8")
+    assert "policy=PRIORITY" in content
+    assert "quantum=4" in content
 
 
 def test_set_memory_limit_windows():

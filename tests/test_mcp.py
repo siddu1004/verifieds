@@ -7,7 +7,13 @@ from typing import Any
 import pytest
 from verifieds.mcp.server import create_mcp_server, validate_workspace_path
 from verifieds.proposer.client import OllamaProposer
-from verifieds.schemas.models import CandidateDraft, Finding, VerifyReport
+from verifieds.schemas.models import (
+    CandidateDraft,
+    Finding,
+    VerifyReport,
+    WorkloadResult,
+)
+
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -104,11 +110,49 @@ def test_mcp_tools_in_process():
         assert "explanation" in explanation_raw
         assert "numbers_used" in explanation_raw
 
+        # 4b. explain_change with crossover_n and rejected candidate
+        wl_dummy = WorkloadResult(
+            n=50, original_ms_median=10.0, candidate_ms_median=5.0, runs=3
+        )
+        rep_crossover = VerifyReport(
+            candidate_id=cand_id,
+            equivalent=True,
+            rejected_reason=None,
+            workloads=[wl_dummy],
+            speedup_at_max_n=1.5,
+            crossover_n=50,
+        )
+
+        res4b = await server.call_tool(
+            "explain_change", {"report": rep_crossover.model_dump()}
+        )
+        expl4b = get_tool_data(res4b)
+        assert "Crossover observed" in expl4b["explanation"]
+
+        rep_rejected = VerifyReport(
+            candidate_id=cand_id,
+            equivalent=False,
+            rejected_reason="Output mismatch",
+            workloads=[],
+        )
+        res4c = await server.call_tool(
+            "explain_change", {"report": rep_rejected.model_dump()}
+        )
+        expl4c = get_tool_data(res4c)
+        assert "was rejected" in expl4c["explanation"]
+
         # Rejection for unknown finding
         with pytest.raises(Exception, match="Unknown finding id"):
             await server.call_tool(
                 "propose_candidates",
                 {"file_path": rel_target, "finding_id": "unknown_id"},
+            )
+
+        # Rejection for unknown candidate matching
+        with pytest.raises(Exception, match="No finding matching candidate_id"):
+            await server.call_tool(
+                "verify_candidate",
+                {"candidate_id": "cand_nonexistent_1", "file_path": rel_target},
             )
 
     asyncio.run(run_test())

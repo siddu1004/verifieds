@@ -1,7 +1,12 @@
+"""Tests for verifieds.detector engine, loader, and rules."""
+
+import importlib.util
 from pathlib import Path
 import pytest
+
 from verifieds.detector.engine import analyze_file
 from verifieds.detector.loader import load_rules
+from verifieds.detector.scanner import SourceView
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -41,30 +46,15 @@ def test_rule_fixtures(rule_id: str):
         findings = analyze_file(pos)
         rule_findings = [f for f in findings if f.rule_id == rule_id]
         assert len(rule_findings) == 1, (
-            f"Expected 1 finding for {pos.name}, got {len(rule_findings)}"
+            f"Expected 1 finding for {rule_id} on {pos.name}, got {len(rule_findings)}"
         )
 
     for neg in neg_files:
         findings = analyze_file(neg)
         rule_findings = [f for f in findings if f.rule_id == rule_id]
         assert len(rule_findings) == 0, (
-            f"Expected 0 findings for {neg.name}, got {len(rule_findings)}"
+            f"Expected 0 findings for {rule_id} on {neg.name}, got {len(rule_findings)}"
         )
-
-
-def test_array_ready_queue_detection():
-    target = ROOT / "sim" / "src" / "ReadyQueue.hpp"
-    findings = analyze_file(target)
-
-    rules_found = {f.rule_id for f in findings}
-    assert "linear-min-extract" in rules_found
-    assert "array-queue-front-removal" in rules_found
-
-
-def test_heap_ready_queue_clean():
-    min_heap = ROOT / "sim" / "src" / "MinHeap.hpp"
-    findings_heap = analyze_file(min_heap)
-    assert len(findings_heap) == 0
 
 
 def test_sim_src_findings():
@@ -87,8 +77,6 @@ def test_sim_src_findings():
 
 
 def test_scanner_edge_cases(tmp_path: Path):
-    from verifieds.detector.scanner import SourceView
-
     code = """
     // Comment with "quoted string" and /* nested comment */
     /* Multi-line
@@ -108,6 +96,26 @@ def test_scanner_edge_cases(tmp_path: Path):
     assert len(sv.loops) >= 1
     findings = analyze_file(sf)
     assert isinstance(findings, list)
+
+
+def test_linear_min_extract_greater_than():
+    code = """
+    int findMin(int* a, int n) {
+        int m = 0;
+        for (int j = 1; j < n; ++j) {
+            if (a[m] > a[j]) m = j;
+        }
+        return m;
+    }
+    """
+    rule_spec = ROOT / "verifieds" / "rules" / "linear-min-extract.py"
+    spec = importlib.util.spec_from_file_location("lme", rule_spec)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    sv = SourceView(code)
+    matches = mod.match(sv)
+    assert len(matches) == 1
 
 
 def test_loader_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
