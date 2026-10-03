@@ -132,6 +132,41 @@ def run_single_mutant(
     )
 
 
+def is_in_operator_eq_function(source_code: str, line_no: int) -> bool:
+    """Return True if line_no (1-indexed) lies inside an operator== function body."""
+    lines = source_code.splitlines()
+    if line_no < 1 or line_no > len(lines):
+        return False
+
+    saw_operator_eq = False
+    brace_depth = 0
+    op_eq_depth: int | None = None
+
+    for idx, line in enumerate(lines, start=1):
+        if "operator==" in line or "operator ==" in line:
+            saw_operator_eq = True
+
+        for char in line:
+            if char == "{":
+                brace_depth += 1
+                if saw_operator_eq and op_eq_depth is None:
+                    op_eq_depth = brace_depth
+                    saw_operator_eq = False
+            elif char == "}":
+                if op_eq_depth is not None and brace_depth == op_eq_depth:
+                    if idx == line_no:
+                        return True
+                    op_eq_depth = None
+                brace_depth -= 1
+            elif char == ";" and op_eq_depth is None:
+                saw_operator_eq = False
+
+        if op_eq_depth is not None and idx == line_no:
+            return True
+
+    return False
+
+
 def run_adequacy_assessment(
     source_dir: Path | None = None,
     files: list[str] | None = None,
@@ -195,13 +230,14 @@ def run_adequacy_assessment(
     denom = killed + survived
     score = (killed / denom) if denom > 0 else 1.0
 
-    test_support_count = sum(
-        1
-        for r in results
-        if r.status == "survived"
-        and r.file == "Scheduler.hpp"
-        and (17 <= r.line <= 19 or 29 <= r.line <= 33 or 43 <= r.line <= 54)
-    )
+    test_support_count = 0
+    for r in results:
+        if r.status == "survived":
+            fpath = source_dir / r.file
+            if fpath.exists():
+                code_text = fpath.read_text(encoding="utf-8")
+                if is_in_operator_eq_function(code_text, r.line):
+                    test_support_count += 1
 
     denom_ex = denom - test_support_count
     score_ex = (killed / denom_ex) if denom_ex > 0 else 1.0

@@ -205,24 +205,65 @@ def test_cli_adequacy_runner_subprocess() -> None:
     assert "Adequacy Score:" in res.stdout
 
 
-def test_adequacy_doc_matches_counts() -> None:
-    """Verify docs/ADEQUACY.md matches tool counts and threshold statement."""
-    doc_path = Path(__file__).parent.parent / "docs" / "ADEQUACY.md"
-    assert doc_path.exists()
+def test_is_in_operator_eq_function_line_shift() -> None:
+    """Verify is_in_operator_eq_function classifies lines after line shifts."""
+    from verifieds.adequacy.runner import is_in_operator_eq_function
+
+    code = (
+        "// Unrelated header comments line 1\n"
+        "// Unrelated header comments line 2\n"
+        "struct Foo {\n"
+        "    int x;\n"
+        "    bool operator==(const Foo& other) const {\n"
+        "        return x == other.x;\n"
+        "    }\n"
+        "};\n"
+    )
+    # Line 6 is inside operator==
+    assert is_in_operator_eq_function(code, 6) is True
+    # Line 4 is x definition outside operator==
+    assert is_in_operator_eq_function(code, 4) is False
+
+    # Insert 50 unrelated comment lines above struct Foo
+    shifted_code = ("// Comment\n" * 50) + code
+    # Line 6 + 50 = 56 is inside operator==
+    assert is_in_operator_eq_function(shifted_code, 56) is True
+    assert is_in_operator_eq_function(shifted_code, 54) is False
+
+
+def test_adequacy_doc_matches_json() -> None:
+    """Verify docs/ADEQUACY.md summary numbers match results/adequacy.json."""
+    root = Path(__file__).parent.parent
+    json_path = root / "results" / "adequacy.json"
+    doc_path = root / "docs" / "ADEQUACY.md"
+    assert json_path.exists(), "results/adequacy.json must exist"
+    assert doc_path.exists(), "docs/ADEQUACY.md must exist"
+
+    report = AdequacyReport.model_validate_json(json_path.read_text(encoding="utf-8"))
     content = doc_path.read_text(encoding="utf-8")
     lines = content.splitlines()
 
-    # First line must report harness score under 0.85 threshold if under 0.85
-    assert "Harness-only score:" in lines[0]
-    assert "< 0.85 threshold" in lines[0]
+    total = len(report.mutants)
+    assert f"Harness-only score: {report.score:.4f}" in lines[0]
+    if report.score < 0.85:
+        assert "< 0.85 threshold" in lines[0]
 
-    # Check key count lines
-    assert "- **Total Mutants Evaluated**: 60" in content
-    assert "- **Killed**: 48" in content
-    assert "- **Survived**: 12" in content
-    assert "- **Harness-only Adequacy Score**: 0.8000" in content
-    assert "- **Test-Support Mutants**: 6" in content
-    assert "- **Score Excluding Test-Support Lines**: 0.8889" in content
+    assert f"- **Total Mutants Evaluated**: {total}" in content
+    assert f"- **Killed**: {report.killed}" in content
+    assert f"- **Survived**: {report.survived}" in content
+    assert f"- **Invalid (Compile Failure)**: {report.invalid}" in content
+    assert f"- **Harness-only Adequacy Score**: {report.score:.4f}" in content
+    assert f"- **Test-Support Mutants**: {report.test_support_count}" in content
+    score_ex_str = f"{report.score_excluding_test_support:.4f}"
+    assert f"- **Score Excluding Test-Support Lines**: {score_ex_str}" in content
+
+
+@pytest.mark.slow
+def test_regenerate_adequacy_json() -> None:
+    """Explicitly slow test to regenerate and assess workload adequacy report."""
+    report = run_adequacy_assessment(seed=1, max_mutants=60, max_workers=4)
+    assert len(report.mutants) == 60
+    assert report.score >= 0.0
 
 
 def test_find_gpp_raises(monkeypatch: pytest.MonkeyPatch) -> None:

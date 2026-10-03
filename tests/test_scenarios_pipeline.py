@@ -171,11 +171,15 @@ def test_pd_fixed_json_candidate() -> None:
 
 def test_pe_late_crossover() -> None:
     """Purpose: Verify crossover_n detection when candidate is faster only at large n.
-    Input: Synthetic pair where original is O(n) and candidate is fast at n=1000.
+    Input: Synthetic pair where original is O(n) and candidate is fast at n=100.
     Expected Result: crossover_n is calculated as greater than the smallest size.
     Bug Catching: Incorrect timing crossover point calculation.
     """
-    orig_cmd = [sys.executable, "-c", "import time; time.sleep(0.02)"]
+    orig_cmd = [
+        sys.executable,
+        "-c",
+        "import sys, time; time.sleep(0.04 if '100' in sys.argv[-1] else 0.001)",
+    ]
     cand_cmd = [sys.executable, "-c", "import time; time.sleep(0.005)"]
 
     runner = BenchmarkRunner(orig_cmd=orig_cmd, cand_cmd=cand_cmd, runs_per_size=3)

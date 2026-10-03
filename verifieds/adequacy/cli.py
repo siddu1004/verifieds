@@ -27,6 +27,12 @@ def main() -> None:
         default=1,
         help="Random seed for workload generation (default: 1)",
     )
+    parser.add_argument(
+        "--json",
+        type=str,
+        default=None,
+        help="Path to write JSON report (default: None)",
+    )
 
     args = parser.parse_args()
     files_list = [f.strip() for f in args.files.split(",") if f.strip()]
@@ -36,6 +42,13 @@ def main() -> None:
         files=files_list,
         seed=args.seed,
     )
+
+    report_json = report.model_dump_json(indent=2, by_alias=True)
+
+    if args.json:
+        json_path = Path(args.json)
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        json_path.write_text(report_json, encoding="utf-8")
 
     print("\n--- Workload Adequacy Report ---")
     print(f"Total Mutants Evaluated: {len(report.mutants)}")
@@ -50,7 +63,6 @@ def main() -> None:
     )
 
     # Print raw JSON report
-    report_json = report.model_dump_json(indent=2, by_alias=True)
     print(report_json)
 
 

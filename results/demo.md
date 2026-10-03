@@ -2,7 +2,7 @@
 
 ## 1. Baseline Simulation (Set A Workload)
 
-Gantt Schedule: `P1[0-10] P2[10-14] P3[14-16] P4[16-17]`
+Gantt Schedule: `P1[0-8] P2[8-12] P3[12-21] P4[21-26]`
 
 ## 2. Static Bottleneck Detection (sim/src/ReadyQueue.hpp)
 
@@ -19,8 +19,8 @@ Candidate 2 (Tie-break Mutant): Equivalent=False, Reason=Output mismatch at n=20
 ## 4. Workload Adequacy Assessment Summary
 
 - Total Mutants Evaluated: 60
-- Killed: 0
-- Survived: 60
-- Harness-only Adequacy Score: 0.0000
-- Test-Support Mutants: 29
-- Score Excluding Test-Support Lines: 0.0000
+- Killed: 47
+- Survived: 13
+- Harness-only Adequacy Score: 0.7833
+- Test-Support Mutants: 7
+- Score Excluding Test-Support Lines: 0.8868

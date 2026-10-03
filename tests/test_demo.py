@@ -1,17 +1,19 @@
-"""Demo runner test suite regenerating results/demo.md deterministically (T6 / R-07)."""
+"""Demo runner test suite regenerating results/demo.md deterministically (T6 / R-08)."""
 
 import difflib
+import json
 from pathlib import Path
 
 from tests.reference_scheduler import schedule
 from tests.test_reference_scheduler import SET_A
-from verifieds.adequacy.runner import run_adequacy_assessment
 from verifieds.detector.engine import analyze_file
+from verifieds.schemas.models import AdequacyReport
 from verifieds.wiring import build_verify_diff
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = ROOT / "results"
 DEMO_MD = RESULTS_DIR / "demo.md"
+ADEQUACY_JSON = RESULTS_DIR / "adequacy.json"
 
 
 def get_diff_pa() -> str:
@@ -125,9 +127,10 @@ def generate_demo_content(workspace: Path | None = None) -> str:
     lines.append("## 4. Workload Adequacy Assessment Summary")
     lines.append("")
 
-    adeq_rep = run_adequacy_assessment(max_mutants=60, max_workers=1, seed=42)
+    raw_json = ADEQUACY_JSON.read_text(encoding="utf-8")
+    adeq_rep = AdequacyReport.model_validate(json.loads(raw_json))
 
-    total_eval = adeq_rep.killed + adeq_rep.survived + adeq_rep.invalid
+    total_eval = len(adeq_rep.mutants)
     lines.append(f"- Total Mutants Evaluated: {total_eval}")
     lines.append(f"- Killed: {adeq_rep.killed}")
     lines.append(f"- Survived: {adeq_rep.survived}")

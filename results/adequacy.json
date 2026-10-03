@@ -1,0 +1,430 @@
+{
+  "mutants": [
+    {
+      "file": "Scheduler.hpp",
+      "line": 13,
+      "from": "-1",
+      "to": "-0",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 17,
+      "from": "==",
+      "to": "!=",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 18,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 18,
+      "from": "&&",
+      "to": "||",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 18,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 18,
+      "from": "&&",
+      "to": "||",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 18,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 29,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 30,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 30,
+      "from": "&&",
+      "to": "||",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 30,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 30,
+      "from": "&&",
+      "to": "||",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 31,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 31,
+      "from": "&&",
+      "to": "||",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 31,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 31,
+      "from": "&&",
+      "to": "||",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 32,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 37,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 38,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 43,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 44,
+      "from": "!=",
+      "to": "==",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 44,
+      "from": "||",
+      "to": "&&",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 44,
+      "from": "!=",
+      "to": "==",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 45,
+      "from": "<",
+      "to": "<=",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 46,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 48,
+      "from": "<",
+      "to": "<=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 49,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 51,
+      "from": "<",
+      "to": "<=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 51,
+      "from": "&&",
+      "to": "||",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 52,
+      "from": "<",
+      "to": "<=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 52,
+      "from": "&&",
+      "to": "||",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 53,
+      "from": "<",
+      "to": "<=",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 59,
+      "from": ">",
+      "to": ">=",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 60,
+      "from": ">=",
+      "to": ">",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 61,
+      "from": "&&",
+      "to": "||",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 61,
+      "from": "- 1",
+      "to": "- 0",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 61,
+      "from": "==",
+      "to": "!=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 62,
+      "from": "- 1",
+      "to": "- 0",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 71,
+      "from": "-1",
+      "to": "-0",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 72,
+      "from": "-1",
+      "to": "-0",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 77,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 77,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 79,
+      "from": "<",
+      "to": "<=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 82,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 82,
+      "from": "&&",
+      "to": "||",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 82,
+      "from": "- 1",
+      "to": "- 0",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 82,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 83,
+      "from": "- 1",
+      "to": "- 0",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 89,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 95,
+      "from": "<",
+      "to": "<=",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 114,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 114,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 115,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 115,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 116,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 116,
+      "from": ">",
+      "to": ">=",
+      "status": "survived"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 123,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 126,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 126,
+      "from": ">",
+      "to": ">=",
+      "status": "killed"
+    },
+    {
+      "file": "Scheduler.hpp",
+      "line": 130,
+      "from": ">",
+      "to": ">=",
+      "status": "survived"
+    }
+  ],
+  "killed": 47,
+  "survived": 13,
+  "invalid": 0,
+  "score": 0.7833,
+  "test_support_count": 7,
+  "score_excluding_test_support": 0.8868
+}

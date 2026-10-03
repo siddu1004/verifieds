@@ -39,7 +39,10 @@ ignore_decorators = ["@mcp.tool", "@mcp_server.tool", "@server.tool"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=verifieds --cov-branch --cov-fail-under=90"
+addopts = '-m "not slow" --cov=verifieds --cov-branch --cov-fail-under=90'
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 
 [tool.coverage.run]
 branch = true

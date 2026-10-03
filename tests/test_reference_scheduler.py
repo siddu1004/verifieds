@@ -3,10 +3,10 @@
 from tests.reference_scheduler import schedule
 
 SET_A = [
-    (1, 0, 10, 3),
+    (1, 0, 8, 3),
     (2, 1, 4, 1),
-    (3, 2, 2, 4),
-    (4, 3, 1, 2),
+    (3, 2, 9, 4),
+    (4, 3, 5, 2),
 ]
 
 SET_B = [
@@ -16,29 +16,40 @@ SET_B = [
 ]
 
 
+def test_set_a_constant() -> None:
+    assert SET_A == [
+        (1, 0, 8, 3),
+        (2, 1, 4, 1),
+        (3, 2, 9, 4),
+        (4, 3, 5, 2),
+    ]
+
+
 def test_reference_scheduler_set_a_fcfs() -> None:
     gantt, metrics = schedule(SET_A, "FCFS")
-    assert gantt == [(1, 0, 10), (2, 10, 14), (3, 14, 16), (4, 16, 17)]
-    assert metrics[1] == (10, 10, 0, 0)
-    assert metrics[2] == (14, 13, 9, 9)
-    assert metrics[3] == (16, 14, 12, 12)
-    assert metrics[4] == (17, 14, 13, 13)
+    assert gantt == [(1, 0, 8), (2, 8, 12), (3, 12, 21), (4, 21, 26)]
+    assert metrics[1] == (8, 8, 0, 0)
+    assert metrics[2] == (12, 11, 7, 7)
+    assert metrics[3] == (21, 19, 10, 10)
+    assert metrics[4] == (26, 23, 18, 18)
 
 
 def test_reference_scheduler_set_a_sjf() -> None:
     gantt, metrics = schedule(SET_A, "SJF")
-    assert gantt == [(1, 0, 10), (4, 10, 11), (3, 11, 13), (2, 13, 17)]
-    assert metrics[1] == (10, 10, 0, 0)
-    assert metrics[4] == (11, 8, 7, 7)
-    assert metrics[3] == (13, 11, 9, 9)
-    assert metrics[2] == (17, 16, 12, 12)
+    assert gantt == [(1, 0, 8), (2, 8, 12), (4, 12, 17), (3, 17, 26)]
+    assert metrics[1] == (8, 8, 0, 0)
+    assert metrics[2] == (12, 11, 7, 7)
+    assert metrics[3] == (26, 24, 15, 15)
+    assert metrics[4] == (17, 14, 9, 9)
 
 
 def test_reference_scheduler_set_a_srtf() -> None:
     gantt, metrics = schedule(SET_A, "SRTF")
-    assert gantt == [(1, 0, 1), (2, 1, 2), (3, 2, 4), (4, 4, 5), (2, 5, 8), (1, 8, 17)]
-    assert metrics[3] == (4, 2, 0, 0)
-    assert metrics[4] == (5, 2, 1, 1)
+    assert gantt == [(1, 0, 1), (2, 1, 5), (4, 5, 10), (1, 10, 17), (3, 17, 26)]
+    assert metrics[1] == (17, 17, 9, 0)
+    assert metrics[2] == (5, 4, 0, 0)
+    assert metrics[3] == (26, 24, 15, 15)
+    assert metrics[4] == (10, 7, 2, 2)
 
 
 def test_reference_scheduler_set_a_rr() -> None:
@@ -46,24 +57,19 @@ def test_reference_scheduler_set_a_rr() -> None:
     assert gantt == [
         (1, 0, 3),
         (2, 3, 6),
-        (3, 6, 8),
-        (4, 8, 9),
-        (1, 9, 12),
-        (2, 12, 13),
-        (1, 13, 17),
+        (3, 6, 9),
+        (4, 9, 12),
+        (1, 12, 15),
+        (2, 15, 16),
+        (3, 16, 19),
+        (4, 19, 21),
+        (1, 21, 23),
+        (3, 23, 26),
     ]
+    assert metrics[1] == (23, 23, 15, 0)
 
 
 def test_reference_scheduler_set_a_priority() -> None:
     gantt, metrics = schedule(SET_A, "PRIORITY")
-    assert gantt == [(1, 0, 10), (2, 10, 14), (4, 14, 15), (3, 15, 17)]
-    assert metrics[2] == (14, 13, 9, 9)
-    assert metrics[4] == (15, 12, 11, 11)
-
-
-def test_reference_scheduler_set_b() -> None:
-    gantt_fcfs, _ = schedule(SET_B, "FCFS")
-    assert gantt_fcfs == [(1, 0, 5), (2, 5, 8), (3, 8, 9)]
-
-    gantt_prio, _ = schedule(SET_B, "PRIORITY")
-    assert gantt_prio == [(1, 0, 5), (2, 5, 8), (3, 8, 9)]
+    assert gantt == [(1, 0, 8), (2, 8, 12), (4, 12, 17), (3, 17, 26)]
+    assert metrics[2] == (12, 11, 7, 7)

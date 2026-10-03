@@ -6,7 +6,6 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from verifieds.detector.engine import analyze_file as detector_analyze_file
-from verifieds.harness.runner import BenchmarkRunner
 from verifieds.proposer.client import OllamaProposer
 from verifieds.schemas.models import Candidate, VerifyReport
 
@@ -42,8 +41,7 @@ def create_mcp_server(
     """Create and configure FastMCP server instance with registered tools."""
     server = FastMCP("VerifiedDS")
     prop_client = proposer or OllamaProposer()
-    sim_cli = ROOT / "build" / exe_name("sim_cli")
-    base_cmd = orig_cmd or [str(sim_cli)]
+    _ = orig_cmd
 
     @server.tool(
         name="analyze_file",
@@ -87,24 +85,26 @@ def create_mcp_server(
         name="verify_candidate",
         description="Run benchmark harness to verify output equivalence.",
     )
-    def verify_candidate(candidate_id: str, file_path: str) -> dict[str, Any]:
-        target_path = validate_workspace_path(file_path)
-        findings = detector_analyze_file(target_path)
-        target_finding = next(
-            (f for f in findings if candidate_id.startswith(f"cand_{f.id}")), None
-        )
+    def verify_candidate(
+        file_path: str, diff: str, candidate_id: str
+    ) -> dict[str, Any]:
+        validate_workspace_path(file_path)
+        import tempfile
+        from verifieds.wiring import build_verify_diff
 
-        if target_finding is None:
-            raise ValueError(f"No finding matching candidate_id '{candidate_id}'")
-
-        runner = BenchmarkRunner(
-            orig_cmd=base_cmd,
-            cand_cmd=base_cmd,
-            candidate_id=candidate_id,
-            runs_per_size=3,
-        )
-        report = runner.run_benchmark(sizes=[20, 50])
-        return report.model_dump()
+        with tempfile.TemporaryDirectory(dir=ROOT) as tmpdir:
+            verify_fn = build_verify_diff(
+                workspace=Path(tmpdir),
+                sizes=[200, 2000, 8000],
+                runs=3,
+            )
+            report = verify_fn(
+                ROOT / "sim",
+                "src/main.cpp",
+                diff,
+                candidate_id,
+            )
+            return report.model_dump()
 
     @server.tool(
         name="explain_change",

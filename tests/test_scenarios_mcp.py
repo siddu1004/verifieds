@@ -1,6 +1,7 @@
 """MCP scenario end-to-end scripted session and security error tests (Q3)."""
 
 import asyncio
+import difflib
 import json
 from pathlib import Path
 from typing import Any
@@ -25,12 +26,19 @@ class FakeMCPProposer(OllamaProposer):
     """Fake proposer returning P-A heap rewrite candidate draft."""
 
     def propose(self, _finding: Finding, _code_snippet: str) -> list[CandidateDraft]:
-        diff = (
-            "--- ReadyQueue.hpp\n"
-            "+++ ReadyQueue.hpp\n"
-            "@@ -10,1 +10,1 @@\n"
-            '-constexpr std::string_view kDefaultBackend = "array";\n'
-            '+constexpr std::string_view kDefaultBackend = "heap";\n'
+        config_file = ROOT / "sim" / "src" / "Config.hpp"
+        orig_config = config_file.read_text(encoding="utf-8")
+        cand_config = orig_config.replace(
+            'constexpr std::string_view kDefaultBackend = "array";',
+            'constexpr std::string_view kDefaultBackend = "heap";',
+        )
+        diff = "".join(
+            difflib.unified_diff(
+                orig_config.splitlines(keepends=True),
+                cand_config.splitlines(keepends=True),
+                fromfile="a/src/Config.hpp",
+                tofile="b/src/Config.hpp",
+            )
         )
         return [
             CandidateDraft(
@@ -93,7 +101,11 @@ def test_mcp_scripted_session() -> None:
         # Step 3: verify_candidate
         res_verify = await server.call_tool(
             "verify_candidate",
-            {"candidate_id": cand_obj.id, "file_path": "sim/src/ReadyQueue.hpp"},
+            {
+                "file_path": "sim/src/ReadyQueue.hpp",
+                "diff": cand_obj.diff,
+                "candidate_id": cand_obj.id,
+            },
         )
         report_raw = get_tool_data(res_verify)
         report_obj = VerifyReport.model_validate(report_raw)
