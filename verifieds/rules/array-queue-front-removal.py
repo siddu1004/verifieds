@@ -10,7 +10,7 @@ def match(source_view: SourceView) -> list[tuple[int, int, str]]:
     shift_pattern = re.compile(
         r"(\w+)\s*\[\s*(\w+)\s*\]\s*=\s*\1\s*\[\s*\2\s*\+\s*1\s*\]"
     )
-    erase_pattern = re.compile(r"\.erase\s*\(\s*\w+\.begin\s*\(\s*\)")
+    erase_pattern = re.compile(r"\.?\s*erase\s*\(\s*\w+\s*\.\s*begin\s*\(")
 
     for loop in source_view.loops:
         body = loop.body_text

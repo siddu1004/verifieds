@@ -28,6 +28,17 @@ def test_candidate_draft_valid_and_roundtrip() -> None:
     assert loaded == draft
 
 
+def test_candidate_draft_empty_strategy_rejected() -> None:
+    """CandidateDraft must reject empty strategy string."""
+    with pytest.raises(ValidationError, match="strategy cannot be empty"):
+        CandidateDraft(
+            strategy="   ",
+            diff="diff",
+            expected_complexity_after="O(1)",
+            risks=[],
+        )
+
+
 def test_finding_valid_and_roundtrip() -> None:
     """Finding model valid instantiations and JSON roundtrip."""
     finding = Finding(

@@ -273,3 +273,35 @@ def test_find_gpp_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(runner.Path, "glob", lambda _self, _pattern: [])
     with pytest.raises(RuntimeError, match="g\\+\\+ compiler not found"):
         runner.find_gpp()
+
+
+def test_cli_adequacy_with_json_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    json_out = tmp_path / "out.json"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "adequacy",
+            "--source",
+            "sim/src",
+            "--files",
+            "ReadyQueue.hpp",
+            "--seed",
+            "1",
+            "--json",
+            str(json_out),
+        ],
+    )
+    cli_main()
+    assert json_out.exists()
+
+
+def test_adequacy_main_function(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unittest.mock import patch
+    from verifieds.adequacy.__main__ import main
+
+    monkeypatch.setattr("sys.argv", ["adequacy"])
+    with patch("verifieds.adequacy.cli.main") as mock_cli_main:
+        main()
+        mock_cli_main.assert_called_once()

@@ -110,3 +110,38 @@ def test_doctor_main(tmp_path: Any) -> None:
     with patch.dict(os.environ, env), patch("sys.exit") as mock_exit:
         main()
         mock_exit.assert_called_once_with(1)
+
+
+def test_doctor_workspace_non_writable(tmp_path: Any) -> None:
+    env = {
+        "VERIFIEDS_WORKSPACE": str(tmp_path),
+        "VERIFIEDS_OLLAMA_URL": "http://127.0.0.1:59999",
+    }
+    with (
+        patch.dict(os.environ, env),
+        patch("os.access", return_value=False),
+    ):
+        code = run_doctor()
+        assert code == 1
+
+
+def test_doctor_ollama_500(tmp_path: Any) -> None:
+    FakeOllamaHandler.status_code = 500
+    server = socketserver.TCPServer(("127.0.0.1", 0), FakeOllamaHandler)
+    port = server.server_address[1]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+
+    url = f"http://127.0.0.1:{port}"
+    env = {
+        "VERIFIEDS_WORKSPACE": str(tmp_path),
+        "VERIFIEDS_OLLAMA_URL": url,
+    }
+    try:
+        with patch.dict(os.environ, env):
+            code = run_doctor()
+            assert code == 1
+    finally:
+        server.shutdown()
+        server.server_close()
+        FakeOllamaHandler.status_code = 200

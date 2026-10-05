@@ -65,6 +65,29 @@ def test_set_memory_limit_windows():
             set_memory_limit(1024 * 1024)
 
 
+def test_set_memory_limit_linux(monkeypatch: pytest.MonkeyPatch):
+    import sys
+    from unittest.mock import MagicMock
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    mock_resource = MagicMock()
+    monkeypatch.setitem(sys.modules, "resource", mock_resource)
+
+    set_memory_limit(1024 * 1024)
+    mock_resource.setrlimit.assert_called_once_with(
+        mock_resource.RLIMIT_AS, (1024 * 1024, 1024 * 1024)
+    )
+
+
+def test_generate_workload_policies():
+    wl_sjf = generate_workload(5, seed=1, policy="SJF")
+    wl_srtf = generate_workload(5, seed=1, policy="SRTF")
+    wl_fcfs = generate_workload(5, seed=1, policy="FCFS")
+    assert len(wl_sjf) == 5
+    assert len(wl_srtf) == 5
+    assert len(wl_fcfs) == 5
+
+
 def test_harness_with_sim_cli(sim_cli_path: Path):
     """Claim: Equivalence testing using seeded workloads and output hashes."""
     res = compare(

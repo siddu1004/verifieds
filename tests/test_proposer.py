@@ -417,3 +417,32 @@ def test_parse_candidates_primitive(
     proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
     with pytest.raises(OllamaParseError, match="JSON response must be a list or dict"):
         proposer.propose(sample_finding, "code")
+
+
+def test_proposer_invalid_outer_json(
+    fake_ollama_server: str, sample_finding: Finding
+) -> None:
+    FakeOllamaHandler.responses = [
+        b"not a json response",
+        b"not a json response",
+    ]
+    proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
+    with pytest.raises(OllamaParseError, match="Invalid outer JSON"):
+        proposer.propose(sample_finding, "code")
+
+
+def test_proposer_unclosed_fence_and_trailing_json_recovery(
+    fake_ollama_server: str, sample_finding: Finding
+) -> None:
+    # Unclosed fence with trailing text after JSON object
+    resp = (
+        "```json\n"
+        '{"strategy": "s", "diff": "d", '
+        '"expected_complexity_after": "O(1)", "risks": []}\n'
+        "Some trailing explanation text that is not JSON"
+    )
+    FakeOllamaHandler.responses = [{"response": resp}]
+    proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
+    drafts = proposer.propose(sample_finding, "code")
+    assert len(drafts) == 1
+    assert drafts[0].strategy == "s"

@@ -156,3 +156,35 @@ def test_loader_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     (rdir / "bad_rule.py").write_text("x = 1", encoding="utf-8")
     with pytest.raises(AttributeError, match="must define a match"):
         loader_mod.load_rules()
+
+
+def test_array_queue_front_erase():
+    code = """
+    void pop(std::vector<int>& v) {
+        for (int i = 0; i < 5; ++i) {
+            v.erase(v.begin());
+        }
+    }
+    """
+    rule_spec = ROOT / "verifieds" / "rules" / "array-queue-front-removal.py"
+    spec = importlib.util.spec_from_file_location("aqfr", rule_spec)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    sv = SourceView(code)
+    matches = mod.match(sv)
+    assert len(matches) == 1
+
+
+def test_scanner_nested_single_statement_loops_and_if_else():
+    code = """
+    void fn() {
+        while (cond)
+            if (x)
+                foo();
+            else
+                bar();
+    }
+    """
+    sv = SourceView(code)
+    assert len(sv.loops) == 1
