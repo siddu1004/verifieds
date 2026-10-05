@@ -422,3 +422,12 @@ def test_mcp_main_module_import() -> None:
     import verifieds.mcp.__main__ as mcp_main
 
     assert hasattr(mcp_main, "mcp_server")
+
+
+def test_mcp_main_function() -> None:
+    from verifieds.mcp.__main__ import main
+    from unittest.mock import patch
+
+    with patch("verifieds.mcp.server.mcp_server.run") as mock_run:
+        main()
+        mock_run.assert_called_once_with(transport="stdio")

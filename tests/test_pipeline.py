@@ -232,3 +232,16 @@ def test_run_pipeline(tmp_path: Path):
     )
     assert len(reports) == 1
     assert reports[0].equivalent is True
+
+
+def test_is_diff_safe_absolute_paths(tmp_path: Path) -> None:
+    from verifieds.pipeline.engine import is_diff_safe
+
+    inside = tmp_path / "inside.cpp"
+    outside = tmp_path.parent / "outside.cpp"
+
+    safe_diff = f"--- a/{inside.resolve()}\n+++ b/{inside.resolve()}\n"
+    unsafe_diff = f"--- a/{outside.resolve()}\n+++ b/{outside.resolve()}\n"
+
+    assert is_diff_safe(tmp_path, safe_diff) is True
+    assert is_diff_safe(tmp_path, unsafe_diff) is False

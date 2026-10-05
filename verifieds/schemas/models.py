@@ -1,7 +1,7 @@
 """Pydantic models for CandidateDraft, Finding, Candidate, and VerifyReport schemas."""
 
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class CandidateDraft(BaseModel):
@@ -13,6 +13,34 @@ class CandidateDraft(BaseModel):
     diff: str
     expected_complexity_after: str
     risks: list[str]
+
+    @field_validator("strategy")
+    @classmethod
+    def validate_strategy_non_empty(_cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("strategy cannot be empty")
+        return v
+
+    @field_validator("diff", mode="before")
+    @classmethod
+    def coerce_diff(_cls, v: Any) -> str:
+        if isinstance(v, (int, float)):
+            return str(v)
+        return str(v) if v is not None else ""
+
+    @field_validator("expected_complexity_after", mode="before")
+    @classmethod
+    def coerce_complexity(_cls, v: Any) -> str:
+        return str(v) if v is not None else ""
+
+    @field_validator("risks", mode="before")
+    @classmethod
+    def coerce_risks(_cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            return [v] if v.strip() else []
+        if isinstance(v, list):
+            return [str(x) for x in v]
+        return []
 
 
 class Finding(BaseModel):

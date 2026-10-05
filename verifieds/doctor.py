@@ -10,6 +10,16 @@ from typing import Any
 from verifieds.proposer.client import OllamaConfig
 
 
+if sys.platform == "win32" and not shutil.which("g++"):
+    winget_pkg = Path(os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WinGet\Packages"))
+    for _cand in winget_pkg.glob("*WinLibs*/mingw64/bin"):
+        if (_cand / "g++.exe").exists():
+            os.environ["PATH"] = (
+                str(_cand) + os.path.pathsep + os.environ.get("PATH", "")
+            )
+            break
+
+
 def run_doctor() -> int:
     all_passed = True
 

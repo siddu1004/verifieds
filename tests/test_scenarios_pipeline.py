@@ -178,7 +178,9 @@ def test_pe_late_crossover() -> None:
     orig_cmd = [
         sys.executable,
         "-c",
-        "import sys, time; time.sleep(0.04 if '100' in sys.argv[-1] else 0.001)",
+        "import sys, time; "
+        "lines = len(open(sys.argv[-1], encoding='utf-8').read().splitlines()); "
+        "time.sleep(0.08 if lines >= 50 else 0.001)",
     ]
     cand_cmd = [sys.executable, "-c", "import time; time.sleep(0.005)"]
 
@@ -300,7 +302,7 @@ def test_l1_prose_response(fake_ollama_server: str) -> None:
 def test_l2_markdown_fences(fake_ollama_server: str) -> None:
     """Purpose: L-2 test handling JSON inside markdown ```json fences.
     Input: Response wrapped in ```json ... ``` code block.
-    Expected Result: OllamaParseError or successful extraction documented.
+    Expected Result: Successful extraction of CandidateDraft from fenced JSON.
     Bug Catching: Failure to parse markdown code-fenced JSON responses.
     """
     FakeOllamaHandler.mode = "L-2"
@@ -316,8 +318,9 @@ def test_l2_markdown_fences(fake_ollama_server: str) -> None:
         complexity_before="O(n)",
         evidence="e",
     )
-    with pytest.raises(OllamaParseError):
-        proposer.propose(finding, "int a;")
+    drafts = proposer.propose(finding, "int a;")
+    assert len(drafts) == 1
+    assert drafts[0].strategy == "s"
 
 
 def test_l3_5mb_body(fake_ollama_server: str) -> None:

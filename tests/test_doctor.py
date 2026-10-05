@@ -85,3 +85,28 @@ def test_doctor_model_missing(tmp_path: Any) -> None:
         server.shutdown()
         server.server_close()
         FakeOllamaHandler.models = [{"name": "qwen2.5-coder:latest"}]
+
+
+def test_doctor_gxx_missing(tmp_path: Any) -> None:
+    env = {
+        "VERIFIEDS_WORKSPACE": str(tmp_path),
+        "VERIFIEDS_OLLAMA_URL": "http://127.0.0.1:59999",
+    }
+    with (
+        patch.dict(os.environ, env),
+        patch("shutil.which", return_value=None),
+    ):
+        code = run_doctor()
+        assert code == 1
+
+
+def test_doctor_main(tmp_path: Any) -> None:
+    from verifieds.doctor import main
+
+    env = {
+        "VERIFIEDS_WORKSPACE": str(tmp_path),
+        "VERIFIEDS_OLLAMA_URL": "http://127.0.0.1:59999",
+    }
+    with patch.dict(os.environ, env), patch("sys.exit") as mock_exit:
+        main()
+        mock_exit.assert_called_once_with(1)

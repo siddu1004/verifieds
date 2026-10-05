@@ -3,18 +3,23 @@ import sys
 from pathlib import Path
 
 from verifieds.detector.engine import analyze_file
+from verifieds.mcp.server import verify_candidate
 from verifieds.proposer.client import (
     OllamaConfig,
     OllamaParseError,
     OllamaProposer,
     OllamaUnavailableError,
 )
-from verifieds.wiring import build_verify_diff
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Live model smoke test for VerifiedDS")
     parser.add_argument("--file", required=True, help="Path to C++ source file")
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="Run verify_candidate on the first applicable candidate",
+    )
     args = parser.parse_args()
 
     file_path = Path(args.file).resolve()
@@ -49,38 +54,54 @@ def main() -> None:
         print("Skipped verification: No candidate proposals returned by Ollama.")
         sys.exit(0)
 
-    cand = candidates[0]
+    print(f"Obtained {len(candidates)} candidate proposal(s).")
+    for idx, cand in enumerate(candidates, 1):
+        print(f"\n--- Candidate {idx} Strategy ---")
+        print(cand.strategy)
+        print(f"--- Candidate {idx} Diff ---")
+        print(cand.diff)
 
-    print("\n--- Proposed Strategy ---")
-    print(cand.strategy)
-    print("\n--- Proposed Diff ---")
-    print(cand.diff)
-
-    proj_dir = file_path.parent
-    main_file = file_path.name
-
-    print("\nVerifying candidate diff...")
-    verify_diff_fn = build_verify_diff(
-        workspace=proj_dir,
-        sizes=(200, 2000, 8000),
-        runs=3,
-    )
-
-    try:
-        report = verify_diff_fn(
-            source_dir=proj_dir,
-            main_file=main_file,
-            diff=cand.diff,
-            candidate_id="smoke_cand_1",
+    if not args.verify:
+        print(
+            "\nSmoke test proposal completed (pass --verify to run verify_candidate)."
         )
-    except Exception as err:
-        print(f"Skipped verification: Compilation or build failed: {err}")
         sys.exit(0)
 
-    if report.equivalent:
-        print(f"Verification PASSED! Speedup: {report.speedup_at_max_n}")
-    else:
-        print(f"Verification REJECTED: {report.rejected_reason}")
+    # With --verify: find first applicable candidate and run verify_candidate
+    target_cand = None
+    target_id = "smoke_cand_1"
+    for idx, cand in enumerate(candidates, 1):
+        if cand.diff and cand.diff.strip():
+            target_cand = cand
+            target_id = f"smoke_cand_{idx}"
+            break
+
+    if target_cand is None:
+        target_cand = candidates[0]
+
+    # Resolve project directory and main file relative to repo root if inside sim/
+    repo_root = file_path.parent.parent
+    project_dir = (
+        str(repo_root / "sim")
+        if (repo_root / "sim").exists()
+        else str(file_path.parent)
+    )
+    main_file = "src/main.cpp" if (repo_root / "sim").exists() else file_path.name
+
+    print(f"\nRunning verify_candidate on candidate '{target_id}'...")
+    res = verify_candidate(
+        project_dir=project_dir,
+        main_file=main_file,
+        diff=target_cand.diff,
+        candidate_id=target_id,
+    )
+
+    print("\n=== VerifyReport ===")
+    print(f"candidate_id: {res.get('candidate_id')}")
+    print(f"equivalent: {res.get('equivalent')}")
+    print(f"rejected_reason: {res.get('rejected_reason')}")
+    print(f"speedup_at_max_n: {res.get('speedup_at_max_n')}")
+    print(f"workloads: {res.get('workloads')}")
 
 
 if __name__ == "__main__":

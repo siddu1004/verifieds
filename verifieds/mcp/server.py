@@ -44,6 +44,36 @@ def validate_workspace_path(file_path: str, workspace_root: Path | None = None) 
     return resolved
 
 
+def verify_candidate(
+    project_dir: str,
+    main_file: str,
+    diff: str,
+    candidate_id: str,
+    workload_cmd: str | None = None,
+) -> dict[str, Any]:
+    ws = get_workspace_root()
+    proj_path = validate_workspace_path(project_dir, ws)
+    _ = validate_workspace_path(str(Path(project_dir) / main_file), ws)
+
+    import tempfile
+    from verifieds.wiring import build_verify_diff
+
+    with tempfile.TemporaryDirectory(dir=ws) as tmpdir:
+        verify_fn = build_verify_diff(
+            workspace=Path(tmpdir),
+            sizes=(200, 2000, 8000),
+            runs=3,
+        )
+        report = verify_fn(
+            proj_path,
+            main_file,
+            diff,
+            candidate_id,
+            workload_cmd=workload_cmd,
+        )
+        return report.model_dump()
+
+
 def create_mcp_server(
     proposer: OllamaProposer | None = None,
     orig_cmd: list[str] | None = None,
@@ -95,34 +125,16 @@ def create_mcp_server(
         name="verify_candidate",
         description="Run benchmark harness to verify output equivalence.",
     )
-    def verify_candidate(
+    def verify_candidate_tool(
         project_dir: str,
         main_file: str,
         diff: str,
         candidate_id: str,
         workload_cmd: str | None = None,
     ) -> dict[str, Any]:
-        ws = get_workspace_root()
-        proj_path = validate_workspace_path(project_dir, ws)
-        _ = validate_workspace_path(str(Path(project_dir) / main_file), ws)
-
-        import tempfile
-        from verifieds.wiring import build_verify_diff
-
-        with tempfile.TemporaryDirectory(dir=ws) as tmpdir:
-            verify_fn = build_verify_diff(
-                workspace=Path(tmpdir),
-                sizes=(200, 2000, 8000),
-                runs=3,
-            )
-            report = verify_fn(
-                proj_path,
-                main_file,
-                diff,
-                candidate_id,
-                workload_cmd=workload_cmd,
-            )
-            return report.model_dump()
+        return verify_candidate(
+            project_dir, main_file, diff, candidate_id, workload_cmd=workload_cmd
+        )
 
     @server.tool(
         name="explain_change",

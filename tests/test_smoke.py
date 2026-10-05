@@ -1,4 +1,4 @@
-"""Unit tests for verifieds.smoke (R-09)."""
+"""Unit tests for verifieds.smoke (R-09 / R-10)."""
 
 import sys
 from pathlib import Path
@@ -46,7 +46,7 @@ int main() {
         encoding="utf-8",
     )
     monkeypatch.setenv("VERIFIEDS_WORKSPACE", str(tmp_path))
-    monkeypatch.setattr(sys, "argv", ["smoke.py", "--file", str(target)])
+    monkeypatch.setattr(sys, "argv", ["smoke.py", "--file", str(target), "--verify"])
 
     dummy_draft = CandidateDraft(
         strategy="Test strategy",
@@ -57,14 +57,17 @@ int main() {
 
     with (
         patch("verifieds.smoke.OllamaProposer") as mock_proposer_cls,
-        patch("verifieds.smoke.build_verify_diff") as mock_verify_builder,
+        patch("verifieds.smoke.verify_candidate") as mock_verify_cand,
     ):
         instance = mock_proposer_cls.return_value
         instance.propose.return_value = [dummy_draft]
 
-        mock_verify_fn = mock_verify_builder.return_value
-        mock_report = mock_verify_fn.return_value
-        mock_report.equivalent = True
-        mock_report.speedup_at_max_n = 2.5
+        mock_verify_cand.return_value = {
+            "candidate_id": "smoke_cand_1",
+            "equivalent": True,
+            "rejected_reason": None,
+            "speedup_at_max_n": 2.5,
+            "workloads": [],
+        }
 
         main()

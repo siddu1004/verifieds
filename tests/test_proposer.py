@@ -256,3 +256,164 @@ def test_proposer_malformed_twice_raises_parse_error(
 
     with pytest.raises(OllamaParseError):
         proposer.propose(sample_finding, code_snippet="void pop() {}")
+
+
+def test_proposer_empty_strategy_raises_typed_error(
+    fake_ollama_server: str, sample_finding: Finding
+) -> None:
+    """Draft with empty strategy raises typed OllamaParseError."""
+    empty_strategy_json = json.dumps(
+        [
+            {
+                "strategy": "   ",
+                "diff": "--- a/main.cpp\n+++ b/main.cpp",
+                "expected_complexity_after": "O(1)",
+                "risks": [],
+            }
+        ]
+    )
+    FakeOllamaHandler.responses = [
+        {"response": empty_strategy_json},
+        {"response": empty_strategy_json},
+    ]
+
+    proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
+    with pytest.raises(OllamaParseError):
+        proposer.propose(sample_finding, "code")
+
+
+def test_proposer_diff_does_not_apply_produces_report(
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Candidate with un-applicable diff produces rejected report."""
+    from verifieds.mcp.server import verify_candidate
+
+    monkeypatch.setenv("VERIFIEDS_WORKSPACE", str(tmp_path))
+    main_cpp = tmp_path / "main.cpp"
+    main_cpp.write_text("int main() { return 0; }\n", encoding="utf-8")
+
+    unapplicable_diff = (
+        "--- a/nonexistent.cpp\n+++ b/nonexistent.cpp\n@@ -1,1 +1,1 @@\n-foo\n+bar\n"
+    )
+
+    report_dict = verify_candidate(
+        project_dir=str(tmp_path),
+        main_file="main.cpp",
+        diff=unapplicable_diff,
+        candidate_id="cand_unapplicable",
+    )
+
+    assert report_dict["equivalent"] is False
+    assert report_dict["rejected_reason"] == "diff does not apply"
+
+
+def test_proposer_diff_outside_project_produces_report(
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Candidate with diff escaping project root produces rejected report."""
+    from verifieds.mcp.server import verify_candidate
+
+    monkeypatch.setenv("VERIFIEDS_WORKSPACE", str(tmp_path))
+    main_cpp = tmp_path / "main.cpp"
+    main_cpp.write_text("int main() { return 0; }\n", encoding="utf-8")
+
+    outside_diff = (
+        "--- a/../outside.cpp\n+++ b/../outside.cpp\n@@ -1,1 +1,1 @@\n-old\n+new\n"
+    )
+
+    report_dict = verify_candidate(
+        project_dir=str(tmp_path),
+        main_file="main.cpp",
+        diff=outside_diff,
+        candidate_id="cand_outside",
+    )
+
+    assert report_dict["equivalent"] is False
+    assert report_dict["rejected_reason"] == "diff does not apply"
+
+
+def test_proposer_three_candidates_only_one_applies(
+    fake_ollama_server: str,
+    sample_finding: Finding,
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Model returning 3 candidates where only 1 applies produces usable list."""
+    from verifieds.mcp.server import verify_candidate
+
+    monkeypatch.setenv("VERIFIEDS_WORKSPACE", str(tmp_path))
+    main_cpp = tmp_path / "main.cpp"
+    main_cpp.write_text(
+        "// original code\nint main() { return 0; }\n", encoding="utf-8"
+    )
+
+    cand1_json = {
+        "strategy": "s1",
+        "diff": "--- a/bad1.cpp\n+++ b/bad1.cpp\n@@ -1,1 +1,1 @@\n-a\n+b\n",
+        "expected_complexity_after": "O(1)",
+        "risks": [],
+    }
+    cand2_json = {
+        "strategy": "s2",
+        "diff": (
+            "--- a/main.cpp\n"
+            "+++ b/main.cpp\n"
+            "@@ -1,2 +1,2 @@\n"
+            "-// original code\n"
+            "+// updated code\n"
+            " int main() { return 0; }\n"
+        ),
+        "expected_complexity_after": "O(1)",
+        "risks": [],
+    }
+    cand3_json = {
+        "strategy": "s3",
+        "diff": "--- a/bad2.cpp\n+++ b/bad2.cpp\n@@ -1,1 +1,1 @@\n-a\n+b\n",
+        "expected_complexity_after": "O(1)",
+        "risks": [],
+    }
+
+    resp_json = json.dumps([cand1_json, cand2_json, cand3_json])
+    FakeOllamaHandler.responses = [{"response": resp_json}]
+
+    proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
+    drafts = proposer.propose(sample_finding, "code")
+    assert len(drafts) == 3
+
+    reports: list[dict[str, Any]] = []
+    for idx, draft in enumerate(drafts, 1):
+        rep = verify_candidate(
+            project_dir=str(tmp_path),
+            main_file="main.cpp",
+            diff=draft.diff,
+            candidate_id=f"c{idx}",
+        )
+        reports.append(rep)
+
+    assert len(reports) == 3
+    assert reports[0]["equivalent"] is False
+    assert reports[0]["rejected_reason"] == "diff does not apply"
+    assert reports[1]["rejected_reason"] is None or reports[1]["equivalent"] is True
+    assert reports[2]["equivalent"] is False
+    assert reports[2]["rejected_reason"] == "diff does not apply"
+
+
+def test_env_timeout_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
+    from verifieds.proposer.client import _env_timeout
+
+    monkeypatch.setenv("VERIFIEDS_OLLAMA_TIMEOUT", "not_a_float")
+    assert _env_timeout() == 120.0
+
+
+def test_parse_candidates_primitive(
+    fake_ollama_server: str, sample_finding: Finding
+) -> None:
+    FakeOllamaHandler.responses = [
+        {"response": "123"},
+        {"response": "123"},
+    ]
+    proposer = OllamaProposer(OllamaConfig(base_url=fake_ollama_server))
+    with pytest.raises(OllamaParseError, match="JSON response must be a list or dict"):
+        proposer.propose(sample_finding, "code")

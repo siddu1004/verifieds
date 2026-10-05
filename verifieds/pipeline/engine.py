@@ -70,10 +70,40 @@ class PipelineEngine:
         return results
 
 
+def is_diff_safe(target_dir: Path, diff: str) -> bool:
+    """Check if all files modified by the diff are strictly within target_dir."""
+    target_dir = target_dir.resolve()
+    for line in diff.splitlines():
+        if line.startswith("--- ") or line.startswith("+++ "):
+            parts = line.split(maxsplit=1)
+            if len(parts) > 1:
+                raw_path = parts[1].strip()
+                if raw_path.startswith("a/") or raw_path.startswith("b/"):
+                    raw_path = raw_path[2:]
+                if raw_path == "/dev/null" or not raw_path:
+                    continue
+                path_obj = Path(raw_path)
+                if path_obj.is_absolute():
+                    try:
+                        resolved = path_obj.resolve()
+                        resolved.relative_to(target_dir)
+                    except ValueError:
+                        return False
+                else:
+                    try:
+                        resolved = (target_dir / path_obj).resolve()
+                        resolved.relative_to(target_dir)
+                    except ValueError:
+                        return False
+    return True
+
+
 def apply_patch(target_dir: Path, diff: str) -> bool:
     """Apply a unified diff to files inside target_dir using git apply."""
     if not diff.strip():
         return True
+    if not is_diff_safe(target_dir, diff):
+        return False
     try:
         proc = subprocess.run(
             [
@@ -139,7 +169,13 @@ def make_verify_diff(
 
         cand_src = workspace_dir / f"src_{candidate_id}"
         shutil.rmtree(cand_src, ignore_errors=True)
-        shutil.copytree(source_dir, cand_src)
+        shutil.copytree(
+            source_dir,
+            cand_src,
+            ignore=shutil.ignore_patterns(
+                "src_*", "orig_*", "cand_*", "tmp*", ".git", "build"
+            ),
+        )
 
         # Apply patch to candidate source
         if not apply_patch(cand_src, diff):

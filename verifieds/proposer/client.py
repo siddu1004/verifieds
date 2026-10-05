@@ -40,7 +40,7 @@ def _env_timeout() -> float:
             return float(t)
         except ValueError:
             pass
-    return 30.0
+    return 120.0
 
 
 @dataclass(frozen=True)
@@ -111,10 +111,30 @@ class OllamaProposer:
 
     def _parse_candidates(self, response_text: str) -> list[CandidateDraft]:
         """Parse raw response text into list of CandidateDraft objects."""
+        text = response_text.strip()
+        if text.startswith("```"):
+            lines = text.splitlines()
+            if len(lines) >= 2 and lines[-1].strip() == "```":
+                text = "\n".join(lines[1:-1]).strip()
+            elif len(lines) >= 1:
+                text = "\n".join(lines[1:]).strip()
+
+        raw_data: Any = None
         try:
-            raw_data = json.loads(response_text)
+            raw_data = json.loads(text)
         except json.JSONDecodeError as err:
-            raise OllamaParseError(f"Invalid JSON string from Ollama: {err}") from err
+            if text.startswith("{") and "}" in text:
+                trimmed = text[: text.rfind("}") + 1]
+                try:
+                    raw_data = json.loads(trimmed)
+                except json.JSONDecodeError:
+                    raise OllamaParseError(
+                        f"Invalid JSON string from Ollama: {err}"
+                    ) from err
+            else:
+                raise OllamaParseError(
+                    f"Invalid JSON string from Ollama: {err}"
+                ) from err
 
         if isinstance(raw_data, dict):
             raw_list = raw_data.get("candidates", [raw_data])
