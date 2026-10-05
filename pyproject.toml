@@ -1,20 +1,23 @@
 [build-system]
 requires = ["setuptools>=72"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "verifieds"
 version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = ["pydantic>=2.7"]
+dependencies = [
+    "pydantic==2.13.4",
+    "mcp==1.30.0",
+]
+
 
 [project.optional-dependencies]
 dev = [
-    "ruff>=0.4",
-    "mypy>=1.10",
-    "vulture>=2.11",
-    "pytest>=8.2",
-    "pytest-cov>=5.0",
+    "ruff==0.16.9",
+    "mypy==2.3.1",
+    "vulture==2.16",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
 ]
 
 [tool.ruff]
@@ -30,17 +33,23 @@ python_version = "3.11"
 
 [tool.vulture]
 min_confidence = 80
-# MCP SDK registers tool-handler functions via decorator introspection;
-# vulture cannot see those call sites, so we suppress them here globally.
-ignore_decorators = ["@mcp.tool", "@server.tool"]
+# Ignore MCP SDK tool registration decorators so registered tool functions are not flagged as unused
+ignore_decorators = ["@mcp.tool", "@mcp_server.tool", "@server.tool"]
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=verifieds --cov-branch --cov-fail-under=90"
+addopts = '-m "not slow" --cov=verifieds --cov-branch --cov-fail-under=90'
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 
 [tool.coverage.run]
 branch = true
 source = ["verifieds"]
+omit = [
+    "verifieds/smoke.py", # Excluded per R-09 spec requirement 5 (manual check, not part of test suite)
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

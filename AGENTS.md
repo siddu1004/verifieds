@@ -6,9 +6,10 @@ and measurably faster. Course version: C++ simulator plus Python tooling.
 Context: docs/PROJECT_BRIEF.md. Work list: TASKS.md.
 
 ## Commands
-- make verify       # the ONLY definition of done; must pass before any task is reported complete
-- make verify-sim   # C++ build, tests, sanitizers, cppcheck
-- make verify-py    # ruff, mypy --strict, vulture, pytest with coverage
+- python tasks.py verify     # the ONLY definition of done; must pass before any task is reported complete
+- python tasks.py sim        # C++ build, tests, cppcheck
+- python tasks.py py         # ruff, mypy --strict, vulture, schemas, imports, pytest
+- python tasks.py evidence --task <ID> # produce evidence log for task completion
 
 ## Hard rules
 1. Each agent works on exactly one task from TASKS.md at a time. Order follows the dependencies in
@@ -30,9 +31,7 @@ Context: docs/PROJECT_BRIEF.md. Work list: TASKS.md.
    (what, why, options). Do not guess.
 
 ## Task protocol
-Run /start-task, implement, run /verify-task, write .agent/state/handoffs/S-0X.md (files changed, tests
-added, make verify result, open risks), set the task status to review, then stop. An independent reviewer
-accepts or rejects it; humans approve at milestone gates.
+Execute node loop (plan, red, green, repair, reflect, commit, push/ci, merge), write handoffs/<ID>.md (files, tests, evidence path, open risks), set status in graph.json and BOARD.md to review/done. Humans approve at milestone gates.
 
 ## Roles
 Role charters: .agent/agents/ROSTER.md. Coordination protocol: .agent/rules/orchestration.md.

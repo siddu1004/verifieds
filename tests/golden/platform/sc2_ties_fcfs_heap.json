@@ -1,0 +1,72 @@
+{
+  "policy": "FCFS",
+  "backend": "heap",
+  "gantt": [
+    {
+      "pid": 1,
+      "start": 0,
+      "end": 4
+    },
+    {
+      "pid": 2,
+      "start": 4,
+      "end": 8
+    },
+    {
+      "pid": 3,
+      "start": 8,
+      "end": 12
+    },
+    {
+      "pid": 4,
+      "start": 12,
+      "end": 16
+    },
+    {
+      "pid": 5,
+      "start": 16,
+      "end": 20
+    }
+  ],
+  "metrics": [
+    {
+      "pid": 1,
+      "completion": 4,
+      "turnaround": 4,
+      "waiting": 0,
+      "response": 0
+    },
+    {
+      "pid": 2,
+      "completion": 8,
+      "turnaround": 8,
+      "waiting": 4,
+      "response": 4
+    },
+    {
+      "pid": 3,
+      "completion": 12,
+      "turnaround": 12,
+      "waiting": 8,
+      "response": 8
+    },
+    {
+      "pid": 4,
+      "completion": 16,
+      "turnaround": 16,
+      "waiting": 12,
+      "response": 12
+    },
+    {
+      "pid": 5,
+      "completion": 20,
+      "turnaround": 20,
+      "waiting": 16,
+      "response": 16
+    }
+  ],
+  "avg_waiting": 8.0,
+  "avg_turnaround": 12.0,
+  "avg_response": 8.0,
+  "context_switches": 4
+}

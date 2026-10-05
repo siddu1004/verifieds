@@ -1,12 +1,42 @@
-"""Tests for Pydantic schemas and schema export verification (S-04)."""
+"""Tests for Pydantic schemas and validation constraints (S-04 / R-01 / D-1)."""
 
 import json
 from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from verifieds.schemas.models import Finding, Candidate, VerifyReport, WorkloadResult
+from verifieds.schemas.models import (
+    CandidateDraft,
+    Finding,
+    Candidate,
+    VerifyReport,
+    WorkloadResult,
+)
 from verifieds.schemas.export import export_schemas, check_schemas
+
+
+def test_candidate_draft_valid_and_roundtrip() -> None:
+    """CandidateDraft valid instantiation and JSON roundtrip."""
+    draft = CandidateDraft(
+        strategy="replace array with queue",
+        diff="--- a/q.cpp\n+++ b/q.cpp",
+        expected_complexity_after="O(1)",
+        risks=["memory overhead"],
+    )
+    dumped = draft.model_dump_json()
+    loaded = CandidateDraft.model_validate_json(dumped)
+    assert loaded == draft
+
+
+def test_candidate_draft_empty_strategy_rejected() -> None:
+    """CandidateDraft must reject empty strategy string."""
+    with pytest.raises(ValidationError, match="strategy cannot be empty"):
+        CandidateDraft(
+            strategy="   ",
+            diff="diff",
+            expected_complexity_after="O(1)",
+            risks=[],
+        )
 
 
 def test_finding_valid_and_roundtrip() -> None:
@@ -43,6 +73,35 @@ def test_finding_invalid_adt_rejected() -> None:
         )
 
 
+def test_finding_line_number_constraints() -> None:
+    """Finding line numbers must be >= 1 and start_line <= end_line."""
+    with pytest.raises(ValidationError):
+        Finding(
+            id="h1",
+            rule_id="r1",
+            file="f.cpp",
+            start_line=0,
+            end_line=5,
+            adt="queue",
+            impl="ArrayQueue",
+            complexity_before="O(n)",
+            evidence="ev",
+        )
+
+    with pytest.raises(ValidationError):
+        Finding(
+            id="h1",
+            rule_id="r1",
+            file="f.cpp",
+            start_line=15,
+            end_line=10,
+            adt="queue",
+            impl="ArrayQueue",
+            complexity_before="O(n)",
+            evidence="ev",
+        )
+
+
 def test_candidate_valid_and_roundtrip() -> None:
     """Candidate model valid instantiation and JSON roundtrip."""
     cand = Candidate(
@@ -58,26 +117,147 @@ def test_candidate_valid_and_roundtrip() -> None:
     assert loaded == cand
 
 
-def test_verify_report_valid_and_roundtrip() -> None:
-    """VerifyReport model valid instantiation and JSON roundtrip."""
-    report = VerifyReport(
-        candidate_id="cand_1",
+def test_workload_result_constraints() -> None:
+    """WorkloadResult n > 0, runs > 0, times >= 0."""
+    with pytest.raises(ValidationError):
+        WorkloadResult(n=0, original_ms_median=1.0, candidate_ms_median=0.5, runs=5)
+
+    with pytest.raises(ValidationError):
+        WorkloadResult(n=100, original_ms_median=1.0, candidate_ms_median=0.5, runs=0)
+
+    with pytest.raises(ValidationError):
+        WorkloadResult(n=100, original_ms_median=-0.1, candidate_ms_median=0.5, runs=5)
+
+    with pytest.raises(ValidationError):
+        WorkloadResult(n=100, original_ms_median=1.0, candidate_ms_median=-0.5, runs=5)
+
+
+def test_verify_report_constraints_and_decision_d1() -> None:
+    """VerifyReport validation rules per DECISION D-1."""
+    workload = WorkloadResult(
+        n=100, original_ms_median=1.0, candidate_ms_median=0.5, runs=5
+    )
+
+    # Valid equivalent report: speedup required, workloads non-empty
+    valid_eq = VerifyReport(
+        candidate_id="c1",
         equivalent=True,
         rejected_reason=None,
-        workloads=[
-            WorkloadResult(
-                n=100,
-                original_ms_median=1.2,
-                candidate_ms_median=0.4,
-                runs=7,
-            )
-        ],
-        speedup_at_max_n=3.0,
-        crossover_n=100,
+        workloads=[workload],
+        speedup_at_max_n=2.0,
+        crossover_n=10,
     )
-    dumped = report.model_dump_json()
-    loaded = VerifyReport.model_validate_json(dumped)
-    assert loaded == report
+    assert valid_eq.equivalent is True
+
+    # Valid non-equivalent report: speedup None, rejected_reason required
+    valid_neq = VerifyReport(
+        candidate_id="c1",
+        equivalent=False,
+        rejected_reason="Output mismatch",
+        workloads=[],
+        speedup_at_max_n=None,
+        crossover_n=None,
+    )
+    assert valid_neq.equivalent is False
+
+    # equivalent=True but speedup is None
+    with pytest.raises(ValidationError):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=True,
+            rejected_reason=None,
+            workloads=[workload],
+            speedup_at_max_n=None,
+            crossover_n=None,
+        )
+
+    # equivalent=True but workloads empty
+    with pytest.raises(ValidationError):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=True,
+            rejected_reason=None,
+            workloads=[],
+            speedup_at_max_n=2.0,
+            crossover_n=None,
+        )
+
+    # equivalent=False but speedup is set
+    with pytest.raises(ValidationError):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=False,
+            rejected_reason="Output mismatch",
+            workloads=[],
+            speedup_at_max_n=2.0,
+            crossover_n=None,
+        )
+
+    # equivalent=False but rejected_reason is None
+    with pytest.raises(ValidationError, match="rejected_reason is required"):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=False,
+            rejected_reason=None,
+            workloads=[],
+            speedup_at_max_n=None,
+            crossover_n=None,
+        )
+
+    # equivalent=True but rejected_reason is set
+    with pytest.raises(ValidationError, match="rejected_reason must be None"):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=True,
+            rejected_reason="Should be None",
+            workloads=[workload],
+            speedup_at_max_n=2.0,
+            crossover_n=None,
+        )
+
+    # crossover_n <= 0
+    with pytest.raises(ValidationError):
+        VerifyReport(
+            candidate_id="c1",
+            equivalent=True,
+            rejected_reason=None,
+            workloads=[workload],
+            speedup_at_max_n=2.0,
+            crossover_n=0,
+        )
+
+
+def test_verify_report_dict_access_and_get() -> None:
+    """Test __getitem__ and get methods of VerifyReport."""
+    workload = WorkloadResult(
+        n=100, original_ms_median=1.0, candidate_ms_median=0.5, runs=5
+    )
+    rep_eq = VerifyReport(
+        candidate_id="c1",
+        equivalent=True,
+        rejected_reason=None,
+        workloads=[workload],
+        speedup_at_max_n=2.0,
+    )
+    rep_neq = VerifyReport(
+        candidate_id="c2",
+        equivalent=False,
+        rejected_reason="Mismatch",
+        workloads=[],
+    )
+
+    assert rep_eq["candidate_id"] == "c1"
+    assert rep_eq["reason"] is None
+    assert rep_neq["reason"] == "Mismatch"
+
+    with pytest.raises(KeyError):
+        _ = rep_eq["non_existent_key"]
+
+    assert rep_eq.get("reason") is None
+    assert rep_eq.get("reason", "default_val") == "default_val"
+    assert rep_neq.get("reason") == "Mismatch"
+    assert rep_eq.get("candidate_id") == "c1"
+    assert rep_eq.get("non_existent_key", 42) == 42
 
 
 def test_schema_export_and_check(tmp_path: Path) -> None:
@@ -85,18 +265,16 @@ def test_schema_export_and_check(tmp_path: Path) -> None:
     schemas_dir = tmp_path / "schemas"
     export_schemas(schemas_dir)
 
+    assert (schemas_dir / "candidate_draft.json").exists()
     assert (schemas_dir / "finding.json").exists()
     assert (schemas_dir / "candidate.json").exists()
     assert (schemas_dir / "verify_report.json").exists()
 
-    # Check passes when up-to-date
     assert check_schemas(schemas_dir) is True
 
-    # Check fails when missing a file
     (schemas_dir / "finding.json").unlink()
     assert check_schemas(schemas_dir) is False
 
-    # Corrupt one schema file to simulate staleness
     (schemas_dir / "finding.json").write_text(json.dumps({"stale": True}))
     assert check_schemas(schemas_dir) is False
 

@@ -1,0 +1,153 @@
+task=S-08
+sha=44e638bbb44a0516c15e4fb595848367c2378cb3
+date=2026-10-02T13:33:09Z
+platform=win32
+dirty=5
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cmake.EXE --version
+cmake version 4.4.2
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\g++.EXE --version
+g++.EXE (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r1) 16.2.0
+Copyright (C) 2026 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cppcheck.EXE --version
+Cppcheck 2.21.0
+python 3.13.14 on win32
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m ruff --version
+ruff 0.16.9
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m mypy --version
+mypy 2.3.1 (compiled: yes)
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m vulture --version
+vulture 2.16
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m pytest --version
+pytest 9.1.1
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cmake.EXE -G MinGW Makefiles -S sim -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=OFF
+-- The CXX compiler identification is GNU 16.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Users/saisi/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin/c++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (1.3s)
+-- Generating done (0.1s)
+-- Build files have been written to: C:/Users/saisi/OneDrive/Documents/dsa_project/verifieds/build
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cmake.EXE --build build
+[ 12%] Building CXX object CMakeFiles/test_smoke.dir/tests/test_smoke.cpp.obj
+[ 25%] Linking CXX executable test_smoke.exe
+[ 25%] Built target test_smoke
+[ 37%] Building CXX object CMakeFiles/test_structures.dir/tests/test_structures.cpp.obj
+[ 50%] Linking CXX executable test_structures.exe
+[ 50%] Built target test_structures
+[ 62%] Building CXX object CMakeFiles/test_scheduler.dir/tests/test_scheduler.cpp.obj
+[ 75%] Linking CXX executable test_scheduler.exe
+[ 75%] Built target test_scheduler
+[ 87%] Building CXX object CMakeFiles/sim_cli.dir/src/main.cpp.obj
+[100%] Linking CXX executable sim_cli.exe
+[100%] Built target sim_cli
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\ctest.EXE --test-dir build --output-on-failure
+Test project C:/Users/saisi/OneDrive/Documents/dsa_project/verifieds/build
+    Start 1: smoke
+1/3 Test #1: smoke ............................   Passed    0.84 sec
+    Start 2: structures
+2/3 Test #2: structures .......................   Passed    0.46 sec
+    Start 3: scheduler
+3/3 Test #3: scheduler ........................   Passed    0.68 sec
+
+100% tests passed out of 3
+
+Total Test time (real) =   1.99 sec
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cppcheck.EXE --enable=warning,style,unusedFunction --std=c++20 --error-exitcode=1 --inline-suppr -I sim/src --suppress=missingIncludeSystem sim/src/BST.hpp sim/src/CircularQueue.hpp sim/src/Config.hpp sim/src/DynArray.hpp sim/src/main.cpp sim/src/MinHeap.hpp sim/src/Process.hpp sim/src/ReadyQueue.hpp sim/src/Scheduler.hpp sim/src/Sort.hpp sim/src/Stack.hpp sim/tests/test_scheduler.cpp sim/tests/test_smoke.cpp sim/tests/test_structures.cpp
+Checking sim\src\BST.hpp ...
+1/14 files checked 7% done
+Checking sim\src\CircularQueue.hpp ...
+2/14 files checked 13% done
+Checking sim\src\Config.hpp ...
+3/14 files checked 13% done
+Checking sim\src\DynArray.hpp ...
+4/14 files checked 19% done
+Checking sim\src\main.cpp ...
+5/14 files checked 44% done
+Checking sim\src\MinHeap.hpp ...
+6/14 files checked 48% done
+Checking sim\src\Process.hpp ...
+7/14 files checked 49% done
+Checking sim\src\ReadyQueue.hpp ...
+8/14 files checked 53% done
+Checking sim\src\Scheduler.hpp ...
+9/14 files checked 73% done
+Checking sim\src\Sort.hpp ...
+10/14 files checked 75% done
+Checking sim\src\Stack.hpp ...
+11/14 files checked 77% done
+Checking sim\tests\test_scheduler.cpp ...
+12/14 files checked 92% done
+Checking sim\tests\test_smoke.cpp ...
+13/14 files checked 92% done
+Checking sim\tests\test_structures.cpp ...
+14/14 files checked 100% done
+STEP sim: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m ruff check .
+All checks passed!
+STEP ruff-check: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m ruff format --check .
+58 files already formatted
+STEP ruff-format: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m mypy --strict verifieds
+Success: no issues found in 18 source files
+STEP mypy: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m vulture verifieds --min-confidence=80
+STEP vulture: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m verifieds.schemas.export --check
+All schemas are up to date.
+STEP schemas: PASS
+STEP imports: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m pytest
+============================= test session starts =============================
+platform win32 -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.1.0
+collected 41 items
+
+tests\test_detector.py .........                                         [ 21%]
+tests\test_harness.py ......                                             [ 36%]
+tests\test_pipeline.py ..                                                [ 41%]
+tests\test_proposer.py ........                                          [ 60%]
+tests\test_schemas.py ...........                                        [ 87%]
+tests\test_sim_cli.py ....                                               [ 97%]
+tests\test_smoke.py .                                                    [100%]
+
+=============================== tests coverage ================================
+______________ coverage: platform win32, python 3.13.14-final-0 _______________
+
+Name                                           Stmts   Miss Branch BrPart  Cover
+--------------------------------------------------------------------------------
+verifieds\__init__.py                              0      0      0      0   100%
+verifieds\detector\__init__.py                     4      0      0      0   100%
+verifieds\detector\engine.py                      23      1      6      1    93%
+verifieds\detector\loader.py                      41      1     14      1    96%
+verifieds\detector\scanner.py                    145      1     72      5    97%
+verifieds\harness\__init__.py                      2      0      0      0   100%
+verifieds\harness\runner.py                      119     13     36      5    86%
+verifieds\pipeline\__init__.py                     2      0      0      0   100%
+verifieds\pipeline\engine.py                      32      2      6      0    95%
+verifieds\proposer\__init__.py                     2      0      0      0   100%
+verifieds\proposer\client.py                      75      4     12      2    93%
+verifieds\rules\adjacent-swap-sort.py             17      0      8      0   100%
+verifieds\rules\array-queue-front-removal.py      17      2      6      1    87%
+verifieds\rules\linear-min-extract.py             40     12     24      2    66%
+verifieds\rules\linear-search-in-loop.py          16      0      8      0   100%
+verifieds\schemas\__init__.py                      2      0      0      0   100%
+verifieds\schemas\export.py                       36      1     14      1    96%
+verifieds\schemas\models.py                       60      2     14      2    95%
+--------------------------------------------------------------------------------
+TOTAL                                            633     39    220     20    92%
+Required test coverage of 90% reached. Total coverage: 91.68%
+============================= 41 passed in 14.07s =============================
+STEP pytest: PASS
+STEP py: PASS
+exit=0

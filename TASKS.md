@@ -32,14 +32,13 @@ add `python -m verifieds.schemas.export --check` and append it to verify-py in t
 Acceptance: round-trip tests; invalid payloads rejected; a stale schema file makes --check fail.
 
 ## S-05 Detector
-tree-sitter (C++), rule loader, the four rules; each rule is a .scm query plus YAML metadata.
-Before writing queries, read the installed tree-sitter and tree-sitter-cpp APIs and record the calls you will use in DEPS.md.
+Pure-Python token scanner (D-3), rule loader, the four rules; each rule is verifieds/rules/<rule_id>.json metadata + <rule_id>.py matcher.
 Acceptance: each rule's positive fixture gives exactly 1 finding with the correct line span and its negative
-fixture gives 0; the loader test fails any rule missing a fixture; the naive simulator code is flagged.
+fixture gives 0; the loader test fails any rule missing a fixture; sim/src/ArrayReadyQueue.hpp yields findings from linear-min-extract and array-queue-front-removal; HeapReadyQueue.hpp and MinHeap.hpp yield none.
 
 ## S-06 Harness
-Compile original and candidate (g++ -O2), run seeded workloads at n = 10^2, 10^3, 10^4, 10^5, compare output
-hashes, time with the median of k runs, compute crossover n*, enforce timeouts and memory limits.
+Compile original and candidate (g++ -O2), run seeded workloads at n = 10^2, 10^3, 10^4, compare output
+hashes, time with the median of k runs, compute crossover n*, enforce timeouts; memory limits on Windows raise NotImplementedError (D-4).
 Runs per size is configurable (default 7). crossover_n is null unless the candidate's timing range does not overlap the original's at the neighbouring sizes.
 Acceptance: synthetic O(n) vs O(n^2) programs give the correct ordering and n*; a noisy-timing test yields crossover_n null; doubling-n metamorphic test;
 a non-equivalent candidate is rejected; a runaway program is killed.

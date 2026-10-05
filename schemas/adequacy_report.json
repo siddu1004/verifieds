@@ -1,0 +1,99 @@
+{
+  "$defs": {
+    "MutantResult": {
+      "additionalProperties": false,
+      "description": "Result for a single mutation site test.",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "line": {
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        },
+        "from": {
+          "title": "From",
+          "type": "string"
+        },
+        "to": {
+          "title": "To",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "killed",
+            "survived",
+            "invalid"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "line",
+        "from",
+        "to",
+        "status"
+      ],
+      "title": "MutantResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Workload adequacy score and mutation testing report.",
+  "properties": {
+    "mutants": {
+      "items": {
+        "$ref": "#/$defs/MutantResult"
+      },
+      "title": "Mutants",
+      "type": "array"
+    },
+    "killed": {
+      "minimum": 0,
+      "title": "Killed",
+      "type": "integer"
+    },
+    "survived": {
+      "minimum": 0,
+      "title": "Survived",
+      "type": "integer"
+    },
+    "invalid": {
+      "minimum": 0,
+      "title": "Invalid",
+      "type": "integer"
+    },
+    "score": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score",
+      "type": "number"
+    },
+    "test_support_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Test Support Count",
+      "type": "integer"
+    },
+    "score_excluding_test_support": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score Excluding Test Support",
+      "type": "number"
+    }
+  },
+  "required": [
+    "mutants",
+    "killed",
+    "survived",
+    "invalid",
+    "score"
+  ],
+  "title": "AdequacyReport",
+  "type": "object"
+}

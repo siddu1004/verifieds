@@ -1,6 +1,6 @@
 {
   "additionalProperties": false,
-  "description": "Proposed data structure or algorithm modification candidate.",
+  "description": "Proposed candidate created by the pipeline from a Finding and CandidateDraft.",
   "properties": {
     "id": {
       "title": "Id",

@@ -1,0 +1,43 @@
+task=T2-quick
+sha=d73e3bb2374231dc90d740df40513500e2e78fa8
+date=2026-10-02T18:03:22Z
+platform=win32
+dirty=0
+mode=quick
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cmake.EXE --version
+cmake version 4.4.2
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\g++.EXE --version
+g++.EXE (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r1) 16.2.0
+Copyright (C) 2026 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+$ C:\Users\saisi\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cppcheck.EXE --version
+Cppcheck 2.21.0
+python 3.13.14 on win32
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m ruff --version
+ruff 0.16.9
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m mypy --version
+mypy 2.3.1 (compiled: yes)
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m vulture --version
+vulture 2.16
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m pytest --version
+pytest 9.1.1
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m ruff check .
+All checks passed!
+STEP ruff-check: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m ruff format --check .
+104 files already formatted
+STEP ruff-format: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m mypy --strict verifieds
+Success: no issues found in 29 source files
+STEP mypy: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m vulture verifieds --min-confidence=80
+STEP vulture: PASS
+$ C:\Users\saisi\OneDrive\Documents\dsa_project\verifieds\.venv\Scripts\python.exe -m verifieds.schemas.export --check
+All schemas are up to date.
+STEP schemas: PASS
+STEP imports: PASS
+exit=0
